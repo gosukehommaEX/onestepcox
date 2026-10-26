@@ -1,0 +1,66 @@
+# Tests for GenSimData()
+
+test_that("Output has the documented structure", {
+  d <- GenSimData(nsim = 5, n_T = 50, n_C = 50,
+                  hazard_C = log(2) / 18, HR = 0.7,
+                  a = 12, E = 60, seed = 1)
+  expect_s3_class(d, "data.table")
+  expect_named(d, c("simID", "group", "time", "event"),
+               ignore.order = TRUE)
+  expect_s3_class(d$group, "factor")
+  expect_setequal(levels(d$group), c("T", "C"))
+  expect_true(all(d$event %in% c(0L, 1L)))
+  expect_true(all(d$time >= 0))
+})
+
+test_that("Same seed yields identical output", {
+  args <- list(nsim = 10, n_T = 50, n_C = 50,
+               hazard_C = log(2) / 18, HR = 0.8,
+               a = 12, E = 70, seed = 42)
+  d1 <- do.call(GenSimData, args)
+  d2 <- do.call(GenSimData, args)
+  expect_equal(d1, d2)
+})
+
+test_that("Each simulation contains exactly E events", {
+  E <- 60
+  d <- GenSimData(nsim = 5, n_T = 50, n_C = 50,
+                  hazard_C = log(2) / 18, HR = 0.7,
+                  a = 12, E = E, seed = 3)
+  events_per_sim <- d[, sum(event), by = simID]$V1
+  expect_true(all(events_per_sim == E))
+})
+
+test_that("Unequal allocation is respected", {
+  d <- GenSimData(nsim = 3, n_T = 30, n_C = 60,
+                  hazard_C = log(2) / 18, HR = 0.7,
+                  a = 12, E = 50, seed = 4)
+  tab <- table(d[simID == 1L, group])
+  # All accrued subjects from sim 1 should still be present at most up to
+  # the original allocation; the relative ordering n_C > n_T must hold.
+  expect_gte(tab[["C"]], tab[["T"]])
+})
+
+test_that("E larger than n_T + n_C errors out", {
+  expect_error(
+    GenSimData(nsim = 2, n_T = 10, n_C = 10,
+               hazard_C = 0.1, HR = 0.7, a = 12, E = 100),
+    "larger than the total sample size"
+  )
+})
+
+test_that("Dropout introduces censored subjects beyond the no-dropout case", {
+  # Use a small dropout hazard relative to the event hazard so both
+  # configurations can hit E events. With dropout, some subjects are
+  # censored due to dropout (event = 0), in addition to the
+  # administrative censoring induced by the analysis cutoff.
+  args_no <- list(nsim = 20, n_T = 50, n_C = 50,
+                  hazard_C = log(2) / 18, HR = 0.7,
+                  a = 12, E = 40, seed = 5)
+  d_no <- do.call(GenSimData, args_no)
+  args_yes <- modifyList(args_no, list(dropout_hazard = 0.01))
+  d_yes <- do.call(GenSimData, args_yes)
+  n_no_event_no  <- d_no[event == 0L, .N]
+  n_no_event_yes <- d_yes[event == 0L, .N]
+  expect_gte(n_no_event_yes, n_no_event_no)
+})

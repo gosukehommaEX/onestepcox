@@ -1,16 +1,42 @@
 Package: onestepcox
 Type: Package
-Title: What the Package Does (Title Case)
+Title: One-Step Closed-Form Hazard Ratio Estimators
 Version: 0.1.0
-Authors@R: c(
-    person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
-    )
+Authors@R: person(
+    given   = "Gosuke",
+    family  = "Homma",
+    role    = c("aut", "cre"),
+    email   = "my.name.is.gosuke@gmail.com",
+    comment = c(ORCID = "0000-0002-6854-5627")
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: What license is it under?
+Description: Closed-form estimators of the hazard ratio of a two-group
+    comparison of survival data that approximate the Cox partial likelihood
+    estimator without iteration. The proposed estimator takes one Halley step
+    on the Cox score equation from the Mantel-Haenszel estimator, and its
+    standard error is updated in the same pass over the risk sets. The Efron
+    and Breslow handling of tied event times and stratification are
+    supported. The package also computes the Mantel-Haenszel, Pike, and Peto
+    estimators, one-step Newton and Chebyshev corrections from the
+    Mantel-Haenszel and Pike estimators, and the Cox estimator, either by the
+    'survival' package or by Newton-Raphson iteration on the same risk-set
+    summaries, and provides functions for simulation studies.
+License: GPL (>= 2)
+URL: https://github.com/gosukehommaEX/onestepcox
+BugReports: https://github.com/gosukehommaEX/onestepcox/issues
 Encoding: UTF-8
-LazyData: true
+Language: en-US
+Depends:
+    R (>= 4.0.0)
+Imports:
+    data.table,
+    stats,
+    survival,
+    utils
+Suggests:
+    asaur,
+    knitr,
+    microbenchmark,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
