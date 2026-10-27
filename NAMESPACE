@@ -3,6 +3,7 @@
 export(CompareOC)
 export(EstHR)
 export(GenSimData)
+export(LimitHR)
 export(RiskTable)
 import(data.table)
 importFrom(stats,rexp)

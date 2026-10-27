@@ -4,57 +4,85 @@
 \alias{CompareOC}
 \title{Compare operating characteristics of HR estimators across scenarios}
 \usage{
-CompareOC(scenarios, methods, nsim, seed = NULL, reference = "Cox")
+CompareOC(
+  scenarios,
+  methods,
+  nsim,
+  seed = NULL,
+  reference = "Cox",
+  ties = "efron",
+  conf.level = 0.95
+)
 }
 \arguments{
 \item{scenarios}{A data frame with one row per scenario. Required
-columns: \code{label} (character or factor),
-\code{n_T} (treatment-group size), \code{n_C} (control-group size),
-\code{hazard_C}, \code{HR}, \code{a}, \code{E}.
-Optional column: \code{dropout_hazard} (defaults to 0).}
+columns: \code{label} (character or factor), \code{n_T}
+(treatment-group size), \code{n_C} (control-group size),
+\code{hazard_C}, \code{HR}, \code{a}, \code{E}, as in
+\code{GenSimData()}. Optional columns: \code{dropout_hazard} and
+\code{time_unit} (both default to 0), and the list columns
+\code{strata_prop} and \code{strata_hazard}, whose elements are passed
+to \code{GenSimData()} (an element \code{NULL} means no strata). When a
+scenario has strata, the estimates are stratified.}
 
-\item{methods}{Character vector of methods to compare. Each must be a
-value accepted by \code{\link{EstHR}}, e.g. one of \code{"Cox"},
-\code{"Peto"}, \code{"Pike"}, \code{"MH_Halley"}. The estimates are
-computed with the default settings of \code{EstHR()} (Efron handling of
-ties, no strata).}
+\item{methods}{Character vector of methods to compare, each a value of
+\code{method} in \code{EstHR()}.}
 
 \item{nsim}{Integer. Number of Monte Carlo replicates per scenario.}
 
 \item{seed}{Optional integer. Base seed; scenario \code{i} uses
 \code{seed + 100 * (i - 1)}.}
 
-\item{reference}{Character string naming the reference method whose
-per-replicate estimates are used as the target for bias and RMSE
-calculations. Default \code{"Cox"}. The reference method itself
-appears in \code{summary} with \code{bias = 0} and \code{rmse = 0}.}
+\item{reference}{Character string naming the reference method, which must
+be one of \code{methods}. Default \code{"Cox"}.}
+
+\item{ties}{Handling of tied event times passed to \code{EstHR()},
+\code{"efron"} (default) or \code{"breslow"}.}
+
+\item{conf.level}{Confidence level of the intervals. Default 0.95.}
 }
 \value{
 A list with two components.
   \describe{
-    \item{estimates}{A data frame in long format with columns
-      \code{label}, \code{simID}, \code{method}, \code{HR}.}
-    \item{summary}{A data frame with one row per (scenario, method)
-      combination, containing \code{label}, \code{HR_true},
-      \code{method}, \code{mean}, \code{bias}, \code{rmse},
-      \code{time_per_sim} (seconds per simulation, averaged across
-      replicates).}
+    \item{estimates}{A data frame in long format with one row per
+      scenario, replicate, and method, and the columns \code{label},
+      \code{simID}, \code{method}, \code{coef} (log HR), \code{se}
+      (standard error of the log HR), and \code{lower} and \code{upper}
+      (confidence limits of the HR).}
+    \item{summary}{A data frame with one row per scenario and method,
+      and the columns \code{label}, \code{HR_true}, \code{method},
+      \code{n_NA} (replicates without an estimate); \code{dev_median},
+      \code{dev_q90}, \code{dev_q99}, and \code{dev_max} (median, 90th
+      and 99th percentiles, and maximum of the absolute difference between
+      \code{coef} and that of the reference); \code{se_ratio_median},
+      \code{se_ratio_min}, and \code{se_ratio_max} (of \code{se} divided
+      by that of the reference); \code{bias} and \code{rmse} (of
+      \code{coef} relative to \code{log(HR_true)}); \code{coverage}
+      (proportion of intervals containing \code{HR_true}); and
+      \code{time_per_sim} (seconds per replicate).}
   }
 }
 \description{
 Runs Monte Carlo simulations across one or more two-group trial scenarios
-and compares the operating characteristics of the supplied HR
-estimation methods. Each scenario specifies its own design parameters
-(sample sizes per group, hazard rate, true HR, accrual length, target
-number of events, optional dropout). The function uses
-\code{\link{GenSimData}} to generate replicate datasets and
-\code{\link{EstHR}} to compute estimates.
+and compares the estimators of \code{\link{EstHR}}: their deviation from a
+reference estimator (by default the Cox estimate) on the log scale, the
+ratio of their standard errors to that of the reference, their bias, root
+mean squared error (RMSE), and the coverage of their confidence intervals
+relative to the true hazard ratio, and the computing time. Each scenario
+specifies its own design (sample sizes, hazard, true HR, accrual length,
+target number of events, and optionally dropout, strata, and the rounding
+of times). The function uses \code{\link{GenSimData}} to generate the
+replicate datasets and \code{\link{EstHR}} to compute the estimates.
 }
 \details{
-The reference method is run first for each scenario; its per-replicate
-estimates form the target against which other methods' bias and RMSE
-are computed. This matches the article convention where the Cox MLE
-plays the role of "ground truth".
+All replicates are summarized; no estimate is trimmed. Replicates in
+which a method gives no estimate are counted in \code{n_NA} and left out
+of that method's summaries, and those in which the reference gives no
+estimate are left out of the deviations and standard-error ratios. The
+percentiles are those of \code{stats::quantile()} with its default
+\code{type = 7}. The computing time is the elapsed time of all replicates
+of a method divided by \code{nsim}; it includes the grouping of the data
+by replicate and is meant as a rough guide only.
 }
 \examples{
 scenarios <- data.frame(
@@ -73,5 +101,11 @@ res <- CompareOC(
   seed      = 1
 )
 res$summary
+
+# A stratified scenario with times in whole months
+scenarios$strata_prop <- list(c(0.5, 0.5))
+scenarios$strata_hazard <- list(c(1, 3))
+scenarios$time_unit <- 1
+CompareOC(scenarios, c("Cox", "MH_Halley"), nsim = 20, seed = 1)$summary
 
 }

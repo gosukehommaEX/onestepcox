@@ -13,6 +13,9 @@ GenSimData(
   a,
   E,
   dropout_hazard = 0,
+  strata_prop = NULL,
+  strata_hazard = NULL,
+  time_unit = 0,
   seed = NULL
 )
 }
@@ -39,22 +42,44 @@ accrual times are drawn from \code{Uniform(0, a)}.}
 \item{dropout_hazard}{Non-negative numeric. Hazard rate of independent
 dropout. Set to 0 (default) to disable dropout.}
 
+\item{strata_prop}{Optional numeric vector of stratum probabilities
+(positive, summing to 1). Each subject is assigned to stratum \code{s}
+with probability \code{strata_prop[s]}, independently of the group.
+Default \code{NULL} (no strata).}
+
+\item{strata_hazard}{Optional positive numeric vector of the same length
+as \code{strata_prop}: the hazard of a subject in stratum \code{s} is
+multiplied by \code{strata_hazard[s]} in both groups, so that the hazard
+ratio is common to all strata. Default \code{NULL}, which means 1 for
+every stratum.}
+
+\item{time_unit}{Non-negative numeric. If positive, the recorded times
+are rounded up to multiples of \code{time_unit}, which produces tied
+times; whether a subject has an event and the analysis time are
+determined from the exact times. Default 0 (no rounding).}
+
 \item{seed}{Optional integer seed for reproducibility.}
 }
 \value{
 A \code{data.table} with one row per subject per simulation,
   carrying the columns \code{simID}, \code{group} (factor with levels
-  \code{"T"} and \code{"C"}), \code{time}, and \code{event}.
+  \code{"T"} and \code{"C"}), \code{time}, and \code{event}, and, when
+  \code{strata_prop} is given, \code{stratum} (integer stratum number).
   Subjects accrued after the E-th event are dropped, and subjects whose
   total calendar time exceeds the analysis time are administratively
-  censored.
+  censored. The rows are sorted by \code{simID} and \code{time}, or by
+  \code{simID}, \code{stratum}, and \code{time} when there are strata, so
+  that the rows of each simulation can be passed to \code{\link{EstHR}}
+  with \code{is_sorted = TRUE}.
 }
 \description{
 Generates Monte Carlo replicates of a two-group parallel-group trial with
 exponential survival times, uniform accrual, optional independent
 dropout, and analysis triggered when the E-th overall event is observed.
 Unequal allocation between treatment and control groups is supported via
-separate \code{n_T} and \code{n_C} arguments.
+separate \code{n_T} and \code{n_C} arguments. Optionally, subjects are
+assigned to strata with their own baseline hazards, and the recorded
+times are rounded up to a time unit, which produces tied times.
 }
 \details{
 The data-generating process is:
@@ -66,13 +91,25 @@ The data-generating process is:
     \code{d_{i,j} ~ Exp(lambda_D)};
   \item Analysis triggered when the E-th overall event is observed.
 }
-The \code{time} and \code{event} columns are the variables to be
-passed to \code{\link{EstHR}}.
+With strata, \code{lambda_C} is multiplied by \code{strata_hazard[s]}
+for the subjects of stratum \code{s}, and \code{lambda_T} by the same
+factor. The \code{time} and \code{event} columns (and \code{stratum}) are
+the variables to be passed to \code{\link{EstHR}}. Without
+\code{strata_prop} and with \code{time_unit = 0}, the random numbers are
+drawn in the same order as in earlier versions, so that a given
+\code{seed} gives the same data.
 }
 \examples{
 d <- GenSimData(nsim = 100, n_T = 100, n_C = 100,
                 hazard_C = log(2) / 18, HR = 0.7,
                 a = 12, E = 110, seed = 1)
 head(d)
+
+# Two strata with different baseline hazards, times in whole months
+d2 <- GenSimData(nsim = 10, n_T = 100, n_C = 100,
+                 hazard_C = log(2) / 18, HR = 0.7, a = 12, E = 110,
+                 strata_prop = c(0.4, 0.6), strata_hazard = c(1, 2),
+                 time_unit = 1, seed = 1)
+head(d2)
 
 }

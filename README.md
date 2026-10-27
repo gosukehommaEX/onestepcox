@@ -47,19 +47,35 @@ EstHR(d$rfstime, d$status, d$hormon, control = 0, method = "MH_Halley",
 head(RiskTable(d$rfstime, d$status, d$hormon, control = 0))
 ```
 
-## Simulation
+## Simulation and large-sample limits
 
 `GenSimData()` generates two-group trials with exponential survival times,
 uniform accrual, optional dropout, and an analysis at a fixed number of
-events. `CompareOC()` runs `GenSimData()` and `EstHR()` over a set of
-scenarios and summarizes the estimates.
+events, optionally with strata that have their own baseline hazards and with
+times rounded up to a unit (which produces ties). `CompareOC()` runs
+`GenSimData()` and `EstHR()` over a set of scenarios and reports, for each
+method, the distribution of the deviation from a reference (by default the
+Cox estimate), the ratio of the standard errors, the bias, RMSE, and
+coverage relative to the true hazard ratio, and the computing time.
+
+`LimitHR()` computes the limits of the estimators as the sample size grows
+under the design of `GenSimData()`. The Mantel-Haenszel and Cox estimators
+converge to the true log hazard ratio, whereas the Pike and Peto estimators,
+and the one-step corrections from the Pike anchor, converge to other values.
+
+```r
+lim <- LimitHR(HR = c(0.5, 2, 10), hazard_C = log(2) / 18,
+               n_T = 100, n_C = 100, a = 12, E = 160)
+lim[lim$method %in% c("Pike", "Pike_Halley", "MH_Halley"), ]
+```
 
 ## Tests
 
-The tests compare the closed-form estimators, the score derivatives, and the
-risk-set summaries with values computed beforehand by an independent Python
-implementation (`tools/test_expected/`, not part of the package build), and
-compare `"Cox"` and `"Cox_NR"` with `survival::coxph()`.
+The tests compare the closed-form estimators, the score derivatives, the
+risk-set summaries, and the large-sample limits with values computed
+beforehand by an independent Python implementation (`tools/test_expected/`,
+not part of the package build), and compare `"Cox"` and `"Cox_NR"` with
+`survival::coxph()`.
 
 ## License
 

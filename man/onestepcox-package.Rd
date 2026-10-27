@@ -24,6 +24,8 @@ The main functions are
   \item{\code{\link{GenSimData}}}{Simulated two-group trial data.}
   \item{\code{\link{CompareOC}}}{Operating characteristics of the
     estimators across simulation scenarios.}
+  \item{\code{\link{LimitHR}}}{Large-sample limits of the estimators under
+    the design of \code{GenSimData()}.}
 }
 }
 \seealso{

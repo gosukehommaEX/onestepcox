@@ -17,6 +17,8 @@
 #'   \item{\code{\link{GenSimData}}}{Simulated two-group trial data.}
 #'   \item{\code{\link{CompareOC}}}{Operating characteristics of the
 #'     estimators across simulation scenarios.}
+#'   \item{\code{\link{LimitHR}}}{Large-sample limits of the estimators under
+#'     the design of \code{GenSimData()}.}
 #' }
 #'
 #' @importFrom utils globalVariables
@@ -31,7 +33,5 @@ utils::globalVariables(c(
   ".",
   # GenSimData.R
   "accrual_time", "surv_time", "dropout_time", "tte", "surv_event",
-  "total", "analysis_time", "event", "time", "simID", "group",
-  # CompareOC.R
-  "HR"
+  "total", "analysis_time", "event", "time", "simID", "group", "stratum"
 ))
