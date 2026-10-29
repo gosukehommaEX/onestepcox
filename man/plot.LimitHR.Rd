@@ -10,14 +10,13 @@
   scale = c("abs", "signed"),
   labels = NULL,
   col = NULL,
-  lty = 1,
-  lwd = 2,
-  pch = 19,
-  cex = 0.8,
-  base_size = 1,
-  legend_pos = "top",
-  legend_inset = 0.02,
-  legend_ncol = 1L,
+  shape = 19,
+  size = 1.5,
+  linetype = 1,
+  linewidth = 0.8,
+  base_size = 11,
+  legend_pos = "bottom",
+  legend_ncol = NULL,
   xlab = "Hazard ratio",
   ylab = NULL,
   main = NULL,
@@ -47,44 +46,50 @@ underscores replaced by hyphens, such as \code{"Pike-Halley"}.}
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
 
-\item{lty, lwd, pch, cex}{Line type, line width, plotting symbol, and symbol
-size of the methods, recycled.}
+\item{shape}{Point shapes of the methods, with the numbers of \code{pch}
+of base graphics, recycled. Default 19 (filled circle).}
 
-\item{base_size}{Character expansion of the axis labels, axis titles, and
-legend (the title is \code{1.2 * base_size}). Default 1.}
+\item{size}{Size of the points. Default 1.5.}
 
-\item{legend_pos}{Position of the legend: a keyword of
-\code{graphics::legend()} such as \code{"top"} (default) or
-\code{"bottomright"}, numeric coordinates \code{c(x, y)} of its top left
-corner, or \code{"none"}.}
+\item{linetype}{Line types of the methods, recycled. Default 1 (solid).}
 
-\item{legend_inset}{Inset of the legend from the margins as a fraction of
-the plot region. Default 0.02.}
+\item{linewidth}{Width of the lines. Default 0.8.}
 
-\item{legend_ncol}{Number of columns of the legend. Default 1.}
+\item{base_size}{Base font size in points, as in
+\code{ggplot2::theme_bw()}. Default 11.}
+
+\item{legend_pos}{Position of the legend: \code{"bottom"} (default),
+\code{"top"}, \code{"right"}, or \code{"left"} (outside the plot
+panel), \code{"none"}, or a numeric vector \code{c(x, y)} with elements
+between 0 and 1 for a position inside the panel (\code{c(1, 1)} is the
+top right corner).}
+
+\item{legend_ncol}{Number of columns of the legend. Default \code{NULL}:
+at most 3 for a legend at the bottom or top, and 1 otherwise.}
 
 \item{xlab, ylab, main}{Axis titles and main title. \code{ylab = NULL} gives
 a title that describes \code{scale}.}
 
-\item{xlim, ylim}{Limits of the axes. Default \code{NULL} (the range of the
-values).}
+\item{xlim, ylim}{Limits of the axes, two increasing numbers (positive on
+a logarithmic axis: always for \code{xlim}, and for \code{ylim} with
+\code{scale = "abs"}). Default \code{NULL} (the range of the values).}
 
-\item{floor}{Smallest absolute bias shown with \code{scale = "abs"};
-smaller values (including 0 at a hazard ratio of 1) are drawn at
-\code{floor}. Default \code{1e-16}.}
+\item{floor}{Smallest absolute bias shown with \code{scale = "abs"}, a
+positive number; smaller values (including 0 at a hazard ratio of 1) are
+drawn at \code{floor}. Default \code{1e-16}.}
 
-\item{...}{Further graphical parameters passed to \code{graphics::plot()},
-such as \code{las}.}
+\item{...}{Not used.}
 }
 \value{
-A matrix of the bias (signed, before \code{floor} is applied) with
-  one row per hazard ratio, in increasing order, and one column per
-  method, invisibly. The graphical parameters are restored on exit.
+A \code{ggplot} object. It is drawn when it is printed, which
+  happens automatically at the top level; inside functions and loops, call
+  \code{print()} or save it with \code{ggplot2::ggsave()}. It can be
+  modified further with \code{ggplot2}.
 }
 \description{
 Plots the large-sample bias of the log hazard ratio estimators computed by
-\code{\link{LimitHR}} against the true hazard ratio, on a logarithmic
-horizontal axis, with one line per method.
+\code{\link{LimitHR}} against the true hazard ratio with \code{ggplot2},
+on a logarithmic horizontal axis, with one line per method.
 }
 \examples{
 lim <- LimitHR(HR = exp(seq(log(0.1), log(10), length.out = 21)),
@@ -92,7 +97,8 @@ lim <- LimitHR(HR = exp(seq(log(0.1), log(10), length.out = 21)),
                E = 160)
 plot(lim)
 plot(lim, scale = "signed", methods = c("Pike", "Peto", "MH_Halley"),
-     legend_pos = "topright", pch = c(1, 2, 4), lwd = 3, base_size = 1.2)
+     legend_pos = "right", shape = c(1, 2, 4), linewidth = 1.2,
+     base_size = 13)
 
 }
 \seealso{

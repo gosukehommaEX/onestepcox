@@ -1,11 +1,12 @@
 #' Plot hazard ratio estimates
 #'
-#' Draws a forest plot of the estimates of \code{\link{EstHR}}: for each
-#' method, the hazard ratio (point) and its confidence interval (segment) on a
-#' logarithmic axis, with the methods from top to bottom in the order of
-#' \code{method}. Vertical reference lines mark the hazard ratio 1 and, when
-#' a Cox method is among the methods, the Cox estimate. The estimate and
-#' interval of each method are written in the right margin.
+#' Draws a forest plot of the estimates of \code{\link{EstHR}} with
+#' \code{ggplot2}: for each method, the hazard ratio (point) and its
+#' confidence interval (segment) on a logarithmic axis, with the methods from
+#' top to bottom in the order of \code{method}. Vertical reference lines mark
+#' the hazard ratio 1 and, when a Cox method is among the methods, the Cox
+#' estimate. The estimate and interval of each method are written on the
+#' right axis.
 #'
 #' @param x An object of class \code{"EstHR"} returned by \code{EstHR()}.
 #' @param labels Labels of the methods on the vertical axis and in the
@@ -13,39 +14,42 @@
 #'   with underscores replaced by hyphens, such as \code{"MH-Halley"}.
 #' @param col Colours of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
-#' @param pch,cex Plotting symbol and its size for the hazard ratios.
-#' @param lwd,lty Width and type of the interval segments.
-#' @param base_size Character expansion of the axis labels, axis titles,
-#'   values, and legend (the title is \code{1.2 * base_size}). Default 1.
+#' @param shape Point shapes of the methods, with the numbers of \code{pch}
+#'   of base graphics, recycled. Default 15 (filled square).
+#' @param size Size of the points. Default 3.
+#' @param linetype Line types of the interval segments, recycled. Default 1
+#'   (solid).
+#' @param linewidth Width of the interval segments. Default 0.8.
+#' @param base_size Base font size in points, as in
+#'   \code{ggplot2::theme_bw()}. Default 11.
 #' @param show_values Logical. Write the hazard ratio and the confidence
-#'   limits in the right margin. Default \code{TRUE}.
-#' @param value_digits Number of significant digits of the values in the
-#'   right margin. Default 3.
+#'   limits on the right axis. Default \code{TRUE}.
+#' @param value_digits Number of significant digits of the values on the
+#'   right axis. Default 3.
 #' @param ref_lines Logical. Draw the reference lines at the hazard ratio 1
 #'   (solid) and at the Cox estimate (dashed; from \code{"Cox"}, or
 #'   \code{"Cox_NR"} without \code{"Cox"}). Default \code{TRUE}.
 #' @param ref_col Colour of the reference lines. Default \code{"grey50"}.
 #' @param legend_pos Position of a legend of the methods: \code{"none"}
-#'   (default, as the methods label the vertical axis), a keyword of
-#'   \code{graphics::legend()} such as \code{"topright"} or
-#'   \code{"bottomleft"}, or numeric coordinates \code{c(x, y)} of its top
-#'   left corner.
-#' @param legend_inset Inset of the legend from the margins as a fraction of
-#'   the plot region. Default 0.02.
-#' @param legend_ncol Number of columns of the legend. Default 1.
+#'   (default, as the methods label the vertical axis), \code{"bottom"},
+#'   \code{"top"}, \code{"right"}, or \code{"left"} (outside the plot panel),
+#'   or a numeric vector \code{c(x, y)} with elements between 0 and 1 for a
+#'   position inside the panel (\code{c(1, 1)} is the top right corner).
+#' @param legend_ncol Number of columns of the legend. Default \code{NULL}:
+#'   at most 3 for a legend at the bottom or top, and 1 otherwise.
 #' @param xlab,main Axis title and main title.
-#' @param xlim Limits of the horizontal axis (hazard ratio). Default
-#'   \code{NULL} (the range of the intervals and 1).
-#' @param mar Margins in lines, as in \code{graphics::par()}. Default
-#'   \code{NULL} (wide enough for the method names and the values).
-#' @param ... Further graphical parameters passed to \code{graphics::plot()},
-#'   such as \code{las} or \code{family}.
+#' @param xlim Limits of the horizontal axis (hazard ratio), two increasing
+#'   positive numbers. Default \code{NULL}: the range of the estimates, the
+#'   intervals, and the reference line at 1, widened by 4 per cent on the
+#'   logarithmic scale. Intervals beyond the limits are cut at the edge of
+#'   the panel.
+#' @param ... Not used.
 #'
-#' @return A data frame of the plotted values, with the columns
-#'   \code{method}, \code{label}, \code{HR}, \code{lower}, \code{upper},
-#'   \code{text} (the values written in the right margin), and \code{y} (the
-#'   vertical position), invisibly. The graphical parameters are restored on
-#'   exit.
+#' @return A \code{ggplot} object. It is drawn when it is printed, which
+#'   happens automatically at the top level; inside functions and loops, call
+#'   \code{print()} or save it with \code{ggplot2::ggsave()}. It can be
+#'   modified further with \code{ggplot2}, for example by adding
+#'   \code{ggplot2::theme()}.
 #'
 #' @seealso \code{\link{EstHR}}, \code{\link{print.EstHR}}.
 #'
@@ -54,95 +58,84 @@
 #'              data = survival::gbsg,
 #'              method = c("MH_Halley", "MH", "Pike", "Peto", "Cox"))
 #' plot(est)
-#' plot(est, col = "black", pch = 19, lwd = 3, base_size = 1.2,
+#' plot(est, col = "black", shape = 19, linewidth = 1.2, base_size = 13,
 #'      main = "GBSG: hormonal therapy", show_values = FALSE)
-#' plot(est, legend_pos = "topright", xlim = c(0.5, 1))
+#' plot(est, legend_pos = "bottom", xlim = c(0.5, 1))
+#' # Further changes with ggplot2
+#' plot(est) + ggplot2::theme(axis.text = ggplot2::element_text(size = 12))
 #'
 #' @export
-plot.EstHR <- function(x, labels = NULL, col = NULL, pch = 15, cex = 1.2,
-                       lwd = 2, lty = 1, base_size = 1, show_values = TRUE,
-                       value_digits = 3L, ref_lines = TRUE,
-                       ref_col = "grey50", legend_pos = "none",
-                       legend_inset = 0.02, legend_ncol = 1L,
-                       xlab = "Hazard ratio", main = NULL, xlim = NULL,
-                       mar = NULL, ...) {
-  method <- attr(x, "method")
-  if (is.null(method) || length(x) != 5L * length(method)) {
-    stop("'x' must be the output of EstHR()")
-  }
-  cols <- if (is.matrix(x)) colnames(x) else names(x)
-  est <- matrix(as.vector(x), nrow = length(method),
-                dimnames = list(method, cols))
-  k <- length(method)
-  # Named by method also for one method (a 1 x 1 result loses its names)
-  hr <- stats::setNames(est[, 2L], method)
-  lower <- stats::setNames(est[, 4L], method)
-  upper <- stats::setNames(est[, 5L], method)
-  ok <- is.finite(hr)
-  if (!any(ok)) stop("there is no estimate to plot")
-  y <- rev(seq_len(k))
-  labels <- plot_labels(method, labels)
-  col <- plot_colors(k, col)
-  pch <- rep_len(pch, k)
-  lwd <- rep_len(lwd, k)
-  lty <- rep_len(lty, k)
+plot.EstHR <- function(x, labels = NULL, col = NULL, shape = 15, size = 3,
+                       linetype = 1, linewidth = 0.8, base_size = 11,
+                       show_values = TRUE, value_digits = 3L,
+                       ref_lines = TRUE, ref_col = "grey50",
+                       legend_pos = "none", legend_ncol = NULL,
+                       xlab = "Hazard ratio", main = NULL, xlim = NULL, ...) {
+  d <- plot_data_EstHR(x, labels, value_digits)
+  cox_hr <- attr(d, "cox_hr")
+  k <- nrow(d)
+  methods <- d$method
 
-  # Reference value of the Cox estimate
-  cox <- intersect(c("Cox", "Cox_NR"), method[ok])
-  cox_hr <- if (length(cox) > 0L) hr[[cox[1L]]] else NULL
-
+  check_limits(xlim, "xlim", positive = TRUE)
   if (is.null(xlim)) {
-    xlim <- range(c(lower, upper, hr, 1), finite = TRUE)
+    v <- c(d$HR, d$lower, d$upper, if (ref_lines) 1)
+    v <- v[is.finite(v) & v > 0]
+    xlim <- range(v)
+    if (xlim[1L] == xlim[2L]) xlim <- xlim * c(0.8, 1.25)
     pad <- 0.04 * diff(log(xlim))
     xlim <- exp(log(xlim) + c(-pad, pad))
   }
-  # formatC() pads its result with blanks, which trimws() removes
-  fmt <- function(v) {
-    trimws(formatC(v, digits = value_digits, format = "fg", flag = "#"))
-  }
-  values <- ifelse(ok, paste0(fmt(hr), " (", fmt(lower), ", ", fmt(upper),
-                              ")"), "NA")
-  if (is.null(mar)) {
-    # About 0.45 lines per character of the labels at cex = 1
-    left <- 0.45 * base_size * max(nchar(labels)) + 1.5
-    right <- if (show_values) {
-      0.45 * base_size * max(nchar(values)) + 1.5
-    } else {
-      1
-    }
-    mar <- c(4.1, left, if (is.null(main)) 1.5 else 3.5, right)
-  }
-  op <- graphics::par(mar = mar)
-  on.exit(graphics::par(op))
 
-  graphics::plot(NA, xlim = xlim, ylim = c(0.5, k + 0.5), log = "x",
-                 yaxt = "n", xlab = xlab, ylab = "", main = main,
-                 cex.axis = base_size, cex.lab = base_size,
-                 cex.main = 1.2 * base_size, ...)
+  # Intervals are cut at the limits, so that no value is infinite on the
+  # logarithmic axis
+  d$lo <- pmin(pmax(d$lower, xlim[1L]), xlim[2L])
+  d$up <- pmin(pmax(d$upper, xlim[1L]), xlim[2L])
+  d$method <- factor(d$method, levels = methods)
+  pts <- d[is.finite(d$HR) & d$HR > 0, , drop = FALSE]
+  seg <- pts[is.finite(pts$lo) & is.finite(pts$up), , drop = FALSE]
+
+  p <- ggplot2::ggplot()
   if (ref_lines) {
-    graphics::abline(v = 1, col = ref_col, lty = 1)
-    if (!is.null(cox_hr)) graphics::abline(v = cox_hr, col = ref_col, lty = 2)
+    p <- p + ggplot2::geom_vline(xintercept = 1, colour = ref_col,
+                                 linetype = "solid")
+    if (!is.null(cox_hr)) {
+      p <- p + ggplot2::geom_vline(xintercept = cox_hr, colour = ref_col,
+                                   linetype = "dashed")
+    }
   }
-  # Intervals clipped to the axis, then the points
-  lo <- pmin(pmax(lower, xlim[1L]), xlim[2L])
-  up <- pmin(pmax(upper, xlim[1L]), xlim[2L])
-  ci <- ok & is.finite(lo) & is.finite(up)
-  if (any(ci)) {
-    graphics::segments(lo[ci], y[ci], up[ci], y[ci], col = col[ci],
-                       lwd = lwd[ci], lty = lty[ci])
+  if (nrow(seg) > 0L) {
+    p <- p + ggplot2::geom_segment(
+      data = seg,
+      mapping = ggplot2::aes(x = .data$lo, xend = .data$up, y = .data$y,
+                             yend = .data$y, colour = .data$method,
+                             linetype = .data$method),
+      linewidth = linewidth
+    )
   }
-  graphics::points(hr[ok], y[ok], pch = pch[ok], col = col[ok], cex = cex)
-  graphics::axis(2, at = y, labels = labels, las = 1, tick = FALSE,
-                 cex.axis = base_size)
-  if (show_values) {
-    graphics::axis(4, at = y, labels = values, las = 1, tick = FALSE,
-                   cex.axis = base_size)
-  }
-  draw_legend(legend_pos, labels, inset = legend_inset, ncol = legend_ncol,
-              cex = base_size, col = col, pch = pch, lty = lty, lwd = lwd)
-
-  invisible(data.frame(method = method, label = labels, HR = unname(hr),
-                       lower = unname(lower), upper = unname(upper),
-                       text = unname(values), y = y,
-                       stringsAsFactors = FALSE))
+  p <- p +
+    ggplot2::geom_point(
+      data = pts,
+      mapping = ggplot2::aes(x = .data$HR, y = .data$y,
+                             colour = .data$method, shape = .data$method),
+      size = size
+    ) +
+    ggplot2::scale_x_log10() +
+    ggplot2::scale_y_continuous(
+      breaks = d$y, labels = d$label,
+      sec.axis = if (show_values) {
+        ggplot2::sec_axis(function(v) v, breaks = d$y, labels = d$text)
+      } else {
+        ggplot2::waiver()
+      }
+    ) +
+    plot_scales(methods, d$label, col = col, shape = shape,
+                linetype = linetype) +
+    ggplot2::coord_cartesian(xlim = xlim, ylim = c(0.5, k + 0.5),
+                             expand = FALSE) +
+    ggplot2::labs(x = xlab, y = NULL, title = main) +
+    plot_theme(base_size) +
+    plot_legend(legend_pos, legend_ncol, k) +
+    ggplot2::theme(axis.ticks.y = ggplot2::element_blank(),
+                   panel.grid.major.y = ggplot2::element_blank())
+  p
 }

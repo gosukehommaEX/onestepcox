@@ -8,22 +8,20 @@
   x,
   labels = NULL,
   col = NULL,
-  pch = 15,
-  cex = 1.2,
-  lwd = 2,
-  lty = 1,
-  base_size = 1,
+  shape = 15,
+  size = 3,
+  linetype = 1,
+  linewidth = 0.8,
+  base_size = 11,
   show_values = TRUE,
   value_digits = 3L,
   ref_lines = TRUE,
   ref_col = "grey50",
   legend_pos = "none",
-  legend_inset = 0.02,
-  legend_ncol = 1L,
+  legend_ncol = NULL,
   xlab = "Hazard ratio",
   main = NULL,
   xlim = NULL,
-  mar = NULL,
   ...
 )
 }
@@ -37,18 +35,24 @@ with underscores replaced by hyphens, such as \code{"MH-Halley"}.}
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
 
-\item{pch, cex}{Plotting symbol and its size for the hazard ratios.}
+\item{shape}{Point shapes of the methods, with the numbers of \code{pch}
+of base graphics, recycled. Default 15 (filled square).}
 
-\item{lwd, lty}{Width and type of the interval segments.}
+\item{size}{Size of the points. Default 3.}
 
-\item{base_size}{Character expansion of the axis labels, axis titles,
-values, and legend (the title is \code{1.2 * base_size}). Default 1.}
+\item{linetype}{Line types of the interval segments, recycled. Default 1
+(solid).}
+
+\item{linewidth}{Width of the interval segments. Default 0.8.}
+
+\item{base_size}{Base font size in points, as in
+\code{ggplot2::theme_bw()}. Default 11.}
 
 \item{show_values}{Logical. Write the hazard ratio and the confidence
-limits in the right margin. Default \code{TRUE}.}
+limits on the right axis. Default \code{TRUE}.}
 
-\item{value_digits}{Number of significant digits of the values in the
-right margin. Default 3.}
+\item{value_digits}{Number of significant digits of the values on the
+right axis. Default 3.}
 
 \item{ref_lines}{Logical. Draw the reference lines at the hazard ratio 1
 (solid) and at the Cox estimate (dashed; from \code{"Cox"}, or
@@ -57,50 +61,50 @@ right margin. Default 3.}
 \item{ref_col}{Colour of the reference lines. Default \code{"grey50"}.}
 
 \item{legend_pos}{Position of a legend of the methods: \code{"none"}
-(default, as the methods label the vertical axis), a keyword of
-\code{graphics::legend()} such as \code{"topright"} or
-\code{"bottomleft"}, or numeric coordinates \code{c(x, y)} of its top
-left corner.}
+(default, as the methods label the vertical axis), \code{"bottom"},
+\code{"top"}, \code{"right"}, or \code{"left"} (outside the plot panel),
+or a numeric vector \code{c(x, y)} with elements between 0 and 1 for a
+position inside the panel (\code{c(1, 1)} is the top right corner).}
 
-\item{legend_inset}{Inset of the legend from the margins as a fraction of
-the plot region. Default 0.02.}
-
-\item{legend_ncol}{Number of columns of the legend. Default 1.}
+\item{legend_ncol}{Number of columns of the legend. Default \code{NULL}:
+at most 3 for a legend at the bottom or top, and 1 otherwise.}
 
 \item{xlab, main}{Axis title and main title.}
 
-\item{xlim}{Limits of the horizontal axis (hazard ratio). Default
-\code{NULL} (the range of the intervals and 1).}
+\item{xlim}{Limits of the horizontal axis (hazard ratio), two increasing
+positive numbers. Default \code{NULL}: the range of the estimates, the
+intervals, and the reference line at 1, widened by 4 per cent on the
+logarithmic scale. Intervals beyond the limits are cut at the edge of
+the panel.}
 
-\item{mar}{Margins in lines, as in \code{graphics::par()}. Default
-\code{NULL} (wide enough for the method names and the values).}
-
-\item{...}{Further graphical parameters passed to \code{graphics::plot()},
-such as \code{las} or \code{family}.}
+\item{...}{Not used.}
 }
 \value{
-A data frame of the plotted values, with the columns
-  \code{method}, \code{label}, \code{HR}, \code{lower}, \code{upper},
-  \code{text} (the values written in the right margin), and \code{y} (the
-  vertical position), invisibly. The graphical parameters are restored on
-  exit.
+A \code{ggplot} object. It is drawn when it is printed, which
+  happens automatically at the top level; inside functions and loops, call
+  \code{print()} or save it with \code{ggplot2::ggsave()}. It can be
+  modified further with \code{ggplot2}, for example by adding
+  \code{ggplot2::theme()}.
 }
 \description{
-Draws a forest plot of the estimates of \code{\link{EstHR}}: for each
-method, the hazard ratio (point) and its confidence interval (segment) on a
-logarithmic axis, with the methods from top to bottom in the order of
-\code{method}. Vertical reference lines mark the hazard ratio 1 and, when
-a Cox method is among the methods, the Cox estimate. The estimate and
-interval of each method are written in the right margin.
+Draws a forest plot of the estimates of \code{\link{EstHR}} with
+\code{ggplot2}: for each method, the hazard ratio (point) and its
+confidence interval (segment) on a logarithmic axis, with the methods from
+top to bottom in the order of \code{method}. Vertical reference lines mark
+the hazard ratio 1 and, when a Cox method is among the methods, the Cox
+estimate. The estimate and interval of each method are written on the
+right axis.
 }
 \examples{
 est <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade),
              data = survival::gbsg,
              method = c("MH_Halley", "MH", "Pike", "Peto", "Cox"))
 plot(est)
-plot(est, col = "black", pch = 19, lwd = 3, base_size = 1.2,
+plot(est, col = "black", shape = 19, linewidth = 1.2, base_size = 13,
      main = "GBSG: hormonal therapy", show_values = FALSE)
-plot(est, legend_pos = "topright", xlim = c(0.5, 1))
+plot(est, legend_pos = "bottom", xlim = c(0.5, 1))
+# Further changes with ggplot2
+plot(est) + ggplot2::theme(axis.text = ggplot2::element_text(size = 12))
 
 }
 \seealso{

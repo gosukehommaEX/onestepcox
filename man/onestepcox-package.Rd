@@ -31,7 +31,8 @@ The main functions are
 \code{Surv(time, event) ~ group + strata(s)}, as in
 \code{survival::coxph()}. The results of \code{EstHR()},
 \code{CompareOC()}, and \code{LimitHR()} have methods of \code{print()}
-and \code{plot()}.
+and \code{plot()}; the \code{plot()} methods draw with \code{ggplot2} and
+return \code{ggplot} objects.
 }
 \seealso{
 Useful links:

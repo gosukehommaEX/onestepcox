@@ -29,9 +29,12 @@
   design of `GenSimData()`.
 * The results of `CompareOC()` and `LimitHR()` have classes `"CompareOC"`
   and `"LimitHR"` with `print()` and `plot()` methods. The `plot()` methods
+  of the three classes draw with 'ggplot2' and return `ggplot` objects. They
   take labels of the methods (by default with hyphens, such as
-  `MH-Halley`), colours, line types, symbols, text size, and legend
-  position.
+  `MH-Halley`), colours, point shapes and sizes, line types and widths, the
+  base font size, and the position of the legend (outside the panel at the
+  bottom, top, right, or left, or inside it). The legend is below the panel
+  by default for the results of `CompareOC()` and `LimitHR()`.
 * `inst/reproduce/` reproduces Figure 1 of Berry, Kitchin and Mock (1991) and
   test data 1 of Therneau and Grambsch (2000); `inst/validation/` compares the
   estimators with an independent Python implementation and `LimitHR()` with

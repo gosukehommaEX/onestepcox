@@ -10,14 +10,13 @@
   methods = NULL,
   labels = NULL,
   col = NULL,
-  lty = 1,
-  lwd = 2,
-  pch = 19,
-  cex = 1,
-  base_size = 1,
-  legend_pos = "topright",
-  legend_inset = 0.02,
-  legend_ncol = 1L,
+  shape = 19,
+  size = 2,
+  linetype = 1,
+  linewidth = 0.8,
+  base_size = 11,
+  legend_pos = "bottom",
+  legend_ncol = NULL,
   xlab = "Scenario",
   ylab = NULL,
   main = NULL,
@@ -44,47 +43,54 @@ underscores replaced by hyphens, such as \code{"MH-Halley"}.}
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
 
-\item{lty, lwd, pch, cex}{Line type, line width, plotting symbol, and symbol
-size of the methods (recycled), for the lines and points; \code{pch} and
-\code{cex} are also used for the outlying points of the box plots.}
+\item{shape}{Point shapes of the methods, with the numbers of \code{pch}
+of base graphics, recycled; for \code{"deviation"}, the shapes of the
+outlying points of the box plots. Default 19 (filled circle).}
 
-\item{base_size}{Character expansion of the axis labels, axis titles, and
-legend (the title is \code{1.2 * base_size}). Default 1.}
+\item{size}{Size of the points. Default 2.}
 
-\item{legend_pos}{Position of the legend: a keyword of
-\code{graphics::legend()} such as \code{"topright"} (default) or
-\code{"bottomleft"}, numeric coordinates \code{c(x, y)} of its top left
-corner, or \code{"none"}.}
+\item{linetype}{Line types of the methods, recycled (not used for
+\code{"deviation"}). Default 1 (solid).}
 
-\item{legend_inset}{Inset of the legend from the margins as a fraction of
-the plot region. Default 0.02.}
+\item{linewidth}{Width of the lines, and of the outlines of the box plots.
+Default 0.8.}
 
-\item{legend_ncol}{Number of columns of the legend. Default 1.}
+\item{base_size}{Base font size in points, as in
+\code{ggplot2::theme_bw()}. Default 11.}
+
+\item{legend_pos}{Position of the legend: \code{"bottom"} (default),
+\code{"top"}, \code{"right"}, or \code{"left"} (outside the plot
+panel), \code{"none"}, or a numeric vector \code{c(x, y)} with elements
+between 0 and 1 for a position inside the panel (\code{c(1, 1)} is the
+top right corner).}
+
+\item{legend_ncol}{Number of columns of the legend. Default \code{NULL}:
+at most 3 for a legend at the bottom or top, and 1 otherwise.}
 
 \item{xlab, ylab, main}{Axis titles and main title. \code{ylab = NULL} gives
 a title that describes \code{what}.}
 
-\item{ylim}{Limits of the vertical axis. Default \code{NULL} (the range
-of the values and of the reference line).}
+\item{ylim}{Limits of the vertical axis, two increasing numbers (positive
+on a logarithmic axis). Default \code{NULL} (the range of the values and
+of the reference line). Values beyond the limits are kept in the box
+plots and cut at the edge of the panel.}
 
-\item{floor}{Smallest deviation shown with \code{"deviation"}; smaller
-deviations (including 0) are drawn at \code{floor}. Default
-\code{1e-16}.}
+\item{floor}{Smallest deviation shown with \code{"deviation"}, a positive
+number; smaller deviations (including 0) are drawn at \code{floor}.
+Default \code{1e-16}.}
 
-\item{...}{Further arguments passed to \code{graphics::boxplot()}
-(\code{"deviation"}), such as \code{boxwex}, or graphical parameters
-passed to \code{graphics::plot()} (the others), such as \code{las}.}
+\item{...}{Not used.}
 }
 \value{
-The plotted values, invisibly: for \code{"deviation"}, a list of
-  the deviations by scenario and method, named
-  \code{"<scenario>:<method>"}; otherwise a matrix with one row per
-  scenario and one column per method. The vertical axis is logarithmic for
-  \code{"deviation"}, and for \code{"time"} when all times are positive.
-  The graphical parameters are restored on exit.
+A \code{ggplot} object. It is drawn when it is printed, which
+  happens automatically at the top level; inside functions and loops, call
+  \code{print()} or save it with \code{ggplot2::ggsave()}. It can be
+  modified further with \code{ggplot2}. The vertical axis is logarithmic
+  for \code{"deviation"}, and for \code{"time"} when all times are
+  positive.
 }
 \description{
-Plots a result of \code{\link{CompareOC}}. With
+Plots a result of \code{\link{CompareOC}} with \code{ggplot2}. With
 \code{what = "deviation"}, box plots of the absolute deviation of each
 method from the reference estimator in the replicates, grouped by
 scenario, on a logarithmic axis. With the other values of \code{what}, a
@@ -101,9 +107,10 @@ scenarios <- data.frame(label = c("HR 0.5", "HR 2"), n_T = 100,
 res <- CompareOC(scenarios, c("Cox", "Peto", "Pike", "MH_Halley"),
                  nsim = 30, seed = 1)
 plot(res)
-plot(res, what = "bias", legend_pos = "bottomleft", base_size = 1.2)
+plot(res, what = "bias", legend_pos = "right", base_size = 13)
 plot(res, what = "coverage", methods = c("Cox", "MH_Halley"),
-     col = c("black", "red"), lty = c(1, 2), ylim = c(0.8, 1))
+     col = c("black", "red"), linetype = c(1, 2), ylim = c(0.8, 1),
+     legend_pos = c(0.02, 0.02))
 
 }
 \seealso{

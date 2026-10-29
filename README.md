@@ -60,12 +60,16 @@ head(RiskTable(Surv(rfstime, status) ~ hormon, data = survival::gbsg))
 ```
 
 The `plot()` methods of `EstHR()`, `CompareOC()`, and `LimitHR()` results
-take the labels of the methods (`labels`; by default the method names with
-hyphens, such as `MH-Halley`), the colours (`col`), line types and widths
-(`lty`, `lwd`), symbols (`pch`, `cex`), the size of the text (`base_size`),
-and the position of the legend (`legend_pos`, a keyword such as
-`"topright"`, coordinates, or `"none"`), and restore the graphical
-parameters on exit.
+draw with ggplot2 and return a `ggplot` object, which can be changed further
+with ggplot2 (for example `plot(est) + ggplot2::theme(...)`) or saved with
+`ggplot2::ggsave()`. They take the labels of the methods (`labels`; by
+default the method names with hyphens, such as `MH-Halley`), the colours
+(`col`), point shapes and sizes (`shape`, `size`), line types and widths
+(`linetype`, `linewidth`), the base font size in points (`base_size`), and
+the position of the legend (`legend_pos`: `"bottom"`, `"top"`, `"right"`, or
+`"left"` outside the panel, coordinates `c(x, y)` inside it, or `"none"`).
+The legend is below the panel by default, except in the forest plot of
+`EstHR()`, where the methods label the vertical axis.
 
 ## Simulation and large-sample limits
 

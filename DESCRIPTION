@@ -30,13 +30,13 @@ Depends:
     R (>= 4.0.0)
 Imports:
     data.table,
-    graphics,
-    grDevices,
+    ggplot2 (>= 3.5.0),
     stats,
     survival,
     utils
 Suggests:
     asaur,
+    grDevices,
     knitr,
     microbenchmark,
     rmarkdown,
