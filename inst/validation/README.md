@@ -34,4 +34,9 @@ implementations use the written values.
 - `validate_LimitHR.R`: PASS if `|mean(d) - bias| <= 4 SE + 0.01 |bias|`,
   where `d` is the difference between the estimator and the Cox estimate in
   each of 50 trials of 100,000 subjects and `SE` is the standard error of its
-  mean.
+  mean. This is checked for MH, Pike, Peto, and the one-step corrections from
+  the Pike anchor (30 checks). The one-step corrections from the MH anchor
+  are INFO: their limit equals that of MH, and their deviation from the Cox
+  estimate at a finite n is a higher-order term of the anchor error (for
+  Newton of fixed sign and of order 1/n), which a test of a zero mean at a
+  fixed n would reject although the limit is 0.

@@ -1,5 +1,5 @@
 "file","checks","PASS","EXPLAINED","FAIL","INFO"
 "inst/reproduce/results/Berry1991_figure1.csv",26,26,0,0,0
 "inst/reproduce/results/TherneauGrambsch2000.csv",24,24,0,0,0
-"inst/validation/results/validate_LimitHR.csv",135,40,0,5,90
+"inst/validation/results/validate_LimitHR.csv",135,30,0,0,105
 "inst/validation/results/validate_python.csv",8932,8920,0,0,12

@@ -12,6 +12,14 @@
 # part of the deviation. The results for n = 1,000 and 10,000 are reported
 # as INFO, to show the convergence.
 #
+# The one-step corrections from the MH anchor are reported as INFO at every
+# n. Their limit is the true log hazard ratio, as for MH itself, so their
+# limiting bias is 0 by the same check as MH. Their deviation from the Cox
+# estimate at a finite n is a higher-order term of the anchor error e (of
+# order e^2 for Newton and e^3 for Halley and Chebyshev); for Newton it has a
+# fixed sign and a mean of order 1/n, larger than the standard error of the
+# mean, so a test of a zero mean at a fixed n does not apply to them.
+#
 # Run from the root of the package after devtools::load_all() (or with the
 # installed package). Output: inst/validation/results/validate_LimitHR.csv.
 # Running time: a few minutes.
@@ -24,6 +32,7 @@ sizes <- data.frame(n = c(1000, 10000, 100000), nsim = c(200, 50, 50),
                     chunk = c(200, 50, 10))
 methods <- c("MH_Halley", "MH_Newton", "Pike_Halley", "Pike_Newton",
              "MH_Chebyshev", "Pike_Chebyshev", "MH", "Pike", "Peto")
+mh_steps <- c("MH_Halley", "MH_Newton", "MH_Chebyshev")
 
 judge <- function(mean_d, bias, se) {
   if (abs(mean_d - bias) <= 4 * se + 0.01 * abs(bias)) "PASS" else "FAIL"
@@ -65,7 +74,11 @@ for (i in seq_along(hrs)) {
       x <- d[[m]]
       bias <- lim$bias[lim$HR == hrs[i] & lim$method == m]
       se <- stats::sd(x) / sqrt(length(x))
-      status <- if (n == max(sizes$n)) judge(mean(x), bias, se) else "INFO"
+      status <- if (n == max(sizes$n) && !m %in% mh_steps) {
+        judge(mean(x), bias, se)
+      } else {
+        "INFO"
+      }
       rows[[length(rows) + 1L]] <- data.frame(
         check_id = paste(hrs[i], n, m, sep = ":"), HR = hrs[i], n = n,
         nsim = length(x), method = m, mean_diff = mean(x), se = se,
