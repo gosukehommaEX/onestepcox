@@ -22,8 +22,11 @@
   gives the same data as before for a given seed.
 * `CompareOC()` reports, for each method, the median, 90th and 99th
   percentiles, and maximum of the deviation from a reference estimator, the
-  ratio of the standard errors, the bias, RMSE, and coverage relative to the
-  true hazard ratio, and the computing time. Scenarios may have strata and
+  deviation divided by the standard error of the reference, the proportion
+  of replicates whose hazard ratio with two decimals differs from that of
+  the reference, the ratio of the standard errors, the bias, standard
+  deviation, RMSE, mean standard error, and coverage relative to the true
+  hazard ratio, and the computing time. Scenarios may have strata and
   rounded times.
 * `LimitHR()` computes the large-sample limits of the estimators under the
   design of `GenSimData()`.

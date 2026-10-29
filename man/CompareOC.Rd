@@ -58,12 +58,20 @@ An object of class \code{"CompareOC"}, a list with two components
       \code{n_NA} (replicates without an estimate); \code{dev_median},
       \code{dev_q90}, \code{dev_q99}, and \code{dev_max} (median, 90th
       and 99th percentiles, and maximum of the absolute difference between
-      \code{coef} and that of the reference); \code{se_ratio_median},
-      \code{se_ratio_min}, and \code{se_ratio_max} (of \code{se} divided
-      by that of the reference); \code{bias} and \code{rmse} (of
-      \code{coef} relative to \code{log(HR_true)}); \code{coverage}
-      (proportion of intervals containing \code{HR_true}); and
-      \code{time_per_sim} (seconds per replicate).}
+      \code{coef} and that of the reference); \code{devse_median},
+      \code{devse_q99}, and \code{devse_max} (median, 99th percentile,
+      and maximum of that difference divided by \code{se} of the
+      reference); \code{mismatch_2dp} (proportion of the replicates in
+      which the hazard ratio written with two decimals, as by
+      \code{sprintf("\%.2f")}, differs from that of the reference);
+      \code{se_ratio_median}, \code{se_ratio_min}, and
+      \code{se_ratio_max} (of \code{se} divided by that of the reference);
+      \code{bias} and \code{rmse} (mean and root mean square of
+      \code{coef - log(HR_true)}); \code{sd} (standard deviation of
+      \code{coef}, with divisor one less than the number of estimates);
+      \code{se_mean} (mean of \code{se}); \code{coverage} (proportion of
+      intervals containing \code{HR_true}); and \code{time_per_sim}
+      (seconds per replicate).}
   }
 }
 \description{
@@ -82,7 +90,8 @@ replicate datasets and \code{\link{EstHR}} to compute the estimates.
 All replicates are summarized; no estimate is trimmed. Replicates in
 which a method gives no estimate are counted in \code{n_NA} and left out
 of that method's summaries, and those in which the reference gives no
-estimate are left out of the deviations and standard-error ratios. The
+estimate are left out of the deviations, the standard-error ratios, and
+\code{mismatch_2dp}. The
 percentiles are those of \code{stats::quantile()} with its default
 \code{type = 7}. The computing time is the elapsed time of all replicates
 of a method divided by \code{nsim}; it includes the grouping of the data

@@ -35,8 +35,9 @@
 #'   \code{"top"}, \code{"right"}, or \code{"left"} (outside the plot panel),
 #'   or a numeric vector \code{c(x, y)} with elements between 0 and 1 for a
 #'   position inside the panel (\code{c(1, 1)} is the top right corner).
-#' @param legend_ncol Number of columns of the legend. Default \code{NULL}:
-#'   at most 3 for a legend at the bottom or top, and 1 otherwise.
+#' @param legend_ncol Number of columns of the legend, filled row by row in
+#'   the order of the methods. Default \code{NULL}: at most 3 for a legend at
+#'   the bottom or top, and 1 otherwise.
 #' @param xlab,main Axis title and main title.
 #' @param xlim Limits of the horizontal axis (hazard ratio), two increasing
 #'   positive numbers. Default \code{NULL}: the range of the estimates, the

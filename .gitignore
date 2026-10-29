@@ -10,3 +10,7 @@
 /Meta/
 /docs/
 __pycache__/
+
+# Quick test runs of the scripts of the article
+inst/scripts/results/quick/
+inst/sup_info/results/quick/

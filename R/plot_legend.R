@@ -7,7 +7,8 @@
 #'   is the bottom left corner and \code{c(1, 1)} the top right corner).
 #' @param legend_ncol Number of columns of the legend, or \code{NULL}: at
 #'   most 3 columns (and at most \code{k}) at the bottom or top, and 1 column
-#'   otherwise.
+#'   otherwise. The entries are filled row by row, so that they read in the
+#'   order of the methods from left to right.
 #' @param k Number of entries of the legend.
 #' @param aesthetics Aesthetics whose legends are combined into one.
 #'
@@ -47,7 +48,7 @@ plot_legend <- function(legend_pos, legend_ncol = NULL, k = 1L,
       !is.finite(legend_ncol) || legend_ncol < 1) {
     stop("'legend_ncol' must be a positive integer")
   }
-  g <- ggplot2::guide_legend(ncol = as.integer(legend_ncol))
+  g <- ggplot2::guide_legend(ncol = as.integer(legend_ncol), byrow = TRUE)
   guides <- do.call(ggplot2::guides,
                     stats::setNames(rep(list(g), length(aesthetics)),
                                     aesthetics))

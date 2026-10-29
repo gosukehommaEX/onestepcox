@@ -63,3 +63,9 @@ test_that("Invalid input gives informative errors", {
   expect_true(inherits(plot(lim, scale = "signed", ylim = c(-1, 1)),
                        "ggplot"))
 })
+
+test_that("The methods have different shapes and line types by default", {
+  p <- plot(small_limit())
+  expect_length(unique(ggplot2::layer_data(p, 1L)$linetype), 5L)
+  expect_length(unique(ggplot2::layer_data(p, 2L)$shape), 5L)
+})

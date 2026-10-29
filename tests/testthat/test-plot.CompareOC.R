@@ -68,3 +68,9 @@ test_that("Invalid input gives informative errors", {
   expect_error(plot(res, what = "bias", ylim = c(1, -1)), "ylim")
   expect_true(inherits(plot(res, what = "bias", ylim = c(-1, 1)), "ggplot"))
 })
+
+test_that("The methods have different shapes and line types by default", {
+  p <- plot(small_compare(), what = "rmse")
+  expect_length(unique(ggplot2::layer_data(p, 1L)$linetype), 3L)
+  expect_length(unique(ggplot2::layer_data(p, 2L)$shape), 3L)
+})

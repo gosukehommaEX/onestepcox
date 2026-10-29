@@ -10,9 +10,9 @@
   methods = NULL,
   labels = NULL,
   col = NULL,
-  shape = 19,
+  shape = c(16, 17, 15, 18, 1, 2, 0, 5),
   size = 2,
-  linetype = 1,
+  linetype = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash"),
   linewidth = 0.8,
   base_size = 11,
   legend_pos = "bottom",
@@ -45,12 +45,16 @@ Okabe-Ito palette).}
 
 \item{shape}{Point shapes of the methods, with the numbers of \code{pch}
 of base graphics, recycled; for \code{"deviation"}, the shapes of the
-outlying points of the box plots. Default 19 (filled circle).}
+outlying points of the box plots. Default
+\code{c(16, 17, 15, 18, 1, 2, 0, 5)} (filled circle, triangle, square,
+and diamond, then the open ones), so that methods with nearly equal
+values remain distinguishable.}
 
 \item{size}{Size of the points. Default 2.}
 
 \item{linetype}{Line types of the methods, recycled (not used for
-\code{"deviation"}). Default 1 (solid).}
+\code{"deviation"}). Default \code{c("solid", "dashed", "dotted",
+"dotdash", "longdash", "twodash")}.}
 
 \item{linewidth}{Width of the lines, and of the outlines of the box plots.
 Default 0.8.}
@@ -64,8 +68,9 @@ panel), \code{"none"}, or a numeric vector \code{c(x, y)} with elements
 between 0 and 1 for a position inside the panel (\code{c(1, 1)} is the
 top right corner).}
 
-\item{legend_ncol}{Number of columns of the legend. Default \code{NULL}:
-at most 3 for a legend at the bottom or top, and 1 otherwise.}
+\item{legend_ncol}{Number of columns of the legend, filled row by row in
+the order of the methods. Default \code{NULL}: at most 3 for a legend at
+the bottom or top, and 1 otherwise.}
 
 \item{xlab, ylab, main}{Axis titles and main title. \code{ylab = NULL} gives
 a title that describes \code{what}.}

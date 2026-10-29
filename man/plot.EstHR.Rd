@@ -66,8 +66,9 @@ right axis. Default 3.}
 or a numeric vector \code{c(x, y)} with elements between 0 and 1 for a
 position inside the panel (\code{c(1, 1)} is the top right corner).}
 
-\item{legend_ncol}{Number of columns of the legend. Default \code{NULL}:
-at most 3 for a legend at the bottom or top, and 1 otherwise.}
+\item{legend_ncol}{Number of columns of the legend, filled row by row in
+the order of the methods. Default \code{NULL}: at most 3 for a legend at
+the bottom or top, and 1 otherwise.}
 
 \item{xlab, main}{Axis title and main title.}
 

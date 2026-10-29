@@ -47,19 +47,28 @@
 #'       \code{n_NA} (replicates without an estimate); \code{dev_median},
 #'       \code{dev_q90}, \code{dev_q99}, and \code{dev_max} (median, 90th
 #'       and 99th percentiles, and maximum of the absolute difference between
-#'       \code{coef} and that of the reference); \code{se_ratio_median},
-#'       \code{se_ratio_min}, and \code{se_ratio_max} (of \code{se} divided
-#'       by that of the reference); \code{bias} and \code{rmse} (of
-#'       \code{coef} relative to \code{log(HR_true)}); \code{coverage}
-#'       (proportion of intervals containing \code{HR_true}); and
-#'       \code{time_per_sim} (seconds per replicate).}
+#'       \code{coef} and that of the reference); \code{devse_median},
+#'       \code{devse_q99}, and \code{devse_max} (median, 99th percentile,
+#'       and maximum of that difference divided by \code{se} of the
+#'       reference); \code{mismatch_2dp} (proportion of the replicates in
+#'       which the hazard ratio written with two decimals, as by
+#'       \code{sprintf("\%.2f")}, differs from that of the reference);
+#'       \code{se_ratio_median}, \code{se_ratio_min}, and
+#'       \code{se_ratio_max} (of \code{se} divided by that of the reference);
+#'       \code{bias} and \code{rmse} (mean and root mean square of
+#'       \code{coef - log(HR_true)}); \code{sd} (standard deviation of
+#'       \code{coef}, with divisor one less than the number of estimates);
+#'       \code{se_mean} (mean of \code{se}); \code{coverage} (proportion of
+#'       intervals containing \code{HR_true}); and \code{time_per_sim}
+#'       (seconds per replicate).}
 #'   }
 #'
 #' @details
 #' All replicates are summarized; no estimate is trimmed. Replicates in
 #' which a method gives no estimate are counted in \code{n_NA} and left out
 #' of that method's summaries, and those in which the reference gives no
-#' estimate are left out of the deviations and standard-error ratios. The
+#' estimate are left out of the deviations, the standard-error ratios, and
+#' \code{mismatch_2dp}. The
 #' percentiles are those of \code{stats::quantile()} with its default
 #' \code{type = 7}. The computing time is the elapsed time of all replicates
 #' of a method divided by \code{nsim}; it includes the grouping of the data
@@ -170,37 +179,11 @@ CompareOC <- function(scenarios, methods, nsim, seed = NULL,
 
     # Summary table (one row per method)
     ref <- by_method[[reference]]
-    eta_true <- log(sc$HR)
     summ_rows[[i]] <- do.call(rbind, lapply(methods_ord, function(m) {
-      x <- by_method[[m]]
-      ok <- !is.na(x$coef)
-      dev <- abs(x$coef - ref$coef)
-      dev <- dev[!is.na(dev)]
-      ratio <- x$se / ref$se
-      ratio <- ratio[!is.na(ratio)]
-      covered <- x$lower <= sc$HR & sc$HR <= x$upper
-      q <- if (length(dev) > 0L) {
-        stats::quantile(dev, c(0.5, 0.9, 0.99), names = FALSE)
-      } else {
-        rep(NA_real_, 3L)
-      }
-      data.frame(
-        label           = as.character(sc$label),
-        HR_true         = sc$HR,
-        method          = m,
-        n_NA            = sum(!ok),
-        dev_median      = q[1L],
-        dev_q90         = q[2L],
-        dev_q99         = q[3L],
-        dev_max         = if (length(dev) > 0L) max(dev) else NA_real_,
-        se_ratio_median = if (length(ratio) > 0L) stats::median(ratio) else NA_real_,
-        se_ratio_min    = if (length(ratio) > 0L) min(ratio) else NA_real_,
-        se_ratio_max    = if (length(ratio) > 0L) max(ratio) else NA_real_,
-        bias            = if (any(ok)) mean(x$coef[ok] - eta_true) else NA_real_,
-        rmse            = if (any(ok)) sqrt(mean((x$coef[ok] - eta_true)^2)) else NA_real_,
-        coverage        = if (any(!is.na(covered))) mean(covered, na.rm = TRUE) else NA_real_,
-        time_per_sim    = unname(time_by_method[m]),
-        stringsAsFactors = FALSE
+      cbind(
+        data.frame(label = as.character(sc$label), HR_true = sc$HR,
+                   method = m, stringsAsFactors = FALSE),
+        summarize_oc(by_method[[m]], ref, sc$HR, unname(time_by_method[m]))
       )
     }))
   }

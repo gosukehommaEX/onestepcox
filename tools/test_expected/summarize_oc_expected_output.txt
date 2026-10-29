@@ -1,0 +1,21 @@
+pairs with both estimates: 4 ; mismatches: [False, False, True, False]
+Expected values (17 significant digits):
+  n_NA = 1,
+  dev_median = 0.0039425109118167989,
+  dev_q90 = 0.015794621503264245,
+  dev_q99 = 0.019579462150326413,
+  dev_max = 0.01999999999999999,
+  devse_median = 0.01712628560078467,
+  devse_q99 = 0.06343522682951136,
+  devse_max = 0.064516129032258035,
+  mismatch_2dp = 0.25,
+  se_ratio_median = 1.0047043010752688,
+  se_ratio_min = 0.95238095238095244,
+  se_ratio_max = 1.0606060606060606,
+  bias = 0.18951898383538138,
+  sd = 0.549825775261507,
+  rmse = 0.52703334974888394,
+  se_mean = 0.26399999999999996,
+  coverage = 0.59999999999999998,
+  time_per_sim = 0.0011999999999999999,
+rmse^2 = 0.27776415174752939, bias^2 + sd^2 (n - 1) / n = 0.27776415174752933

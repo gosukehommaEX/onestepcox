@@ -79,8 +79,11 @@ events, optionally with strata that have their own baseline hazards and with
 times rounded up to a unit (which produces ties). `CompareOC()` runs
 `GenSimData()` and `EstHR()` over a set of scenarios and reports, for each
 method, the distribution of the deviation from a reference (by default the
-Cox estimate), the ratio of the standard errors, the bias, RMSE, and
-coverage relative to the true hazard ratio, and the computing time.
+Cox estimate), also relative to the standard error of the reference, the
+proportion of replicates in which the hazard ratio with two decimals differs
+from that of the reference, the ratio of the standard errors, the bias,
+standard deviation, RMSE, mean standard error, and coverage relative to the
+true hazard ratio, and the computing time.
 
 `LimitHR()` computes the limits of the estimators as the sample size grows
 under the design of `GenSimData()`. The Mantel-Haenszel and Cox estimators

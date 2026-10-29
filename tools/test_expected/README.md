@@ -15,6 +15,7 @@ package build (`.Rbuildignore`).
 | `export_data.py` | Writes `data/*.csv` from `ovarian` and `gbsg` of 'survival' 3.8-12 and `pharmacoSmoking` of 'asaur' 0.50 (source commits in the script) |
 | `make_expected.py` | Reads `data/*.csv`, runs `ref.py` and `limit_ref.py`, and writes `tests/testthat/helper-expected.R` and `expected_values.txt` |
 | `data/` | The columns of the three datasets used by the tests |
+| `summarize_oc_expected.py` | Independent implementation in numpy of the summary of one method in one scenario of `CompareOC()`, applied to estimates written by hand; prints the expected values of `test-summarize_oc.R` (output in `summarize_oc_expected_output.txt`) |
 
 Regenerate the helper file (numpy and scipy are required):
 

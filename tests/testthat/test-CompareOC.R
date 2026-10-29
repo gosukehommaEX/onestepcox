@@ -32,9 +32,10 @@ test_that("Output has the documented structure", {
                c("label", "simID", "method", "coef", "se", "lower", "upper"))
   expect_named(res$summary,
                c("label", "HR_true", "method", "n_NA", "dev_median",
-                 "dev_q90", "dev_q99", "dev_max", "se_ratio_median",
-                 "se_ratio_min", "se_ratio_max", "bias", "rmse", "coverage",
-                 "time_per_sim"))
+                 "dev_q90", "dev_q99", "dev_max", "devse_median",
+                 "devse_q99", "devse_max", "mismatch_2dp", "se_ratio_median",
+                 "se_ratio_min", "se_ratio_max", "bias", "sd", "rmse",
+                 "se_mean", "coverage", "time_per_sim"))
   # 2 scenarios * 4 methods (* 30 replicates)
   expect_equal(nrow(res$summary), 2 * 4)
   expect_equal(nrow(res$estimates), 2 * 4 * 30)
@@ -47,6 +48,7 @@ test_that("The reference has zero deviation and unit SE ratio", {
   ref_rows <- res$summary[res$summary$method == "Cox", ]
   expect_true(all(ref_rows$dev_max == 0))
   expect_true(all(ref_rows$se_ratio_min == 1 & ref_rows$se_ratio_max == 1))
+  expect_true(all(ref_rows$devse_max == 0 & ref_rows$mismatch_2dp == 0))
   # The reference is computed first
   expect_identical(res$summary$method[1:3], c("Cox", "Peto", "MH_Halley"))
 })
@@ -73,6 +75,14 @@ test_that("Summaries agree with the estimates", {
       expect_equal(s$dev_max, max(dev), info = info)
       expect_equal(s$dev_q99, unname(stats::quantile(dev, 0.99)), info = info)
       expect_equal(s$se_ratio_median, stats::median(e$se / r$se), info = info)
+      expect_equal(s$sd, stats::sd(e$coef), info = info)
+      expect_equal(s$se_mean, mean(e$se), info = info)
+      expect_equal(s$devse_max, max(dev / r$se), info = info)
+      expect_equal(s$devse_q99, unname(stats::quantile(dev / r$se, 0.99)),
+                   info = info)
+      expect_equal(s$mismatch_2dp,
+                   mean(sprintf("%.2f", exp(e$coef)) !=
+                          sprintf("%.2f", exp(r$coef))), info = info)
     }
   }
 })
