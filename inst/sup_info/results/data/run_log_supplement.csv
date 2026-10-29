@@ -1,0 +1,5 @@
+"section","scenarios","replicates","elapsed_min","quick","date","R","onestepcox","survival"
+"limit_sup",162,0,0.01,FALSE,"2026-10-29 20:00","R version 4.6.1 (2026-06-24 ucrt)","0.1.0","3.8.12"
+"gridB_breslow",10,100000,9.77,FALSE,"2026-10-29 20:00","R version 4.6.1 (2026-06-24 ucrt)","0.1.0","3.8.12"
+"gridC",24,240000,21.6,FALSE,"2026-10-29 20:00","R version 4.6.1 (2026-06-24 ucrt)","0.1.0","3.8.12"
+"timing",4,0,0.47,FALSE,"2026-10-29 20:00","R version 4.6.1 (2026-06-24 ucrt)","0.1.0","3.8.12"

@@ -1,0 +1,19 @@
+\begin{table}
+\caption{Results of the reproduction and validation scripts of the package (folders \texttt{inst/reproduce} and \texttt{inst/validation})}
+\label{tab:validation}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.2cm}rrrrr}
+\toprule
+Check & Checks & PASS & EXPLAINED & FAIL & INFO \\
+\midrule
+Reproduction of Figure 1 of Berry, Kitchin and Mock (1991): Peto and Pike estimates in simulated trials & 26 & 26 & 0 & 0 & 0 \\
+Reproduction of test data 1 of Therneau and Grambsch (2000): score, information, and Cox estimate & 24 & 24 & 0 & 0 & 0 \\
+\texttt{LimitHR()} against simulations with up to 100,000 subjects & 135 & 30 & 0 & 0 & 105 \\
+All estimators against an independent implementation in Python & 8,932 & 8,920 & 0 & 0 & 12 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize INFO: results reported without a pass or fail criterion; their reasons are given in \texttt{inst/validation/README.md}.\par}
+\end{table}

@@ -1,0 +1,57 @@
+\begin{table}
+\caption{Hazard ratio estimates with 95\% confidence intervals in the two applications, with the Efron handling of ties, and the absolute difference of the log hazard ratio from the Cox estimate}
+\label{tab:application}
+\centering
+\small
+\begin{tabular}{llr}
+\toprule
+Method & HR (95\% CI) & $|\hat{\eta} - \hat{\eta}_{\mathrm{Cox}}|$ \\
+\midrule
+\multicolumn{3}{l}{\texttt{gbsg}} \\
+\multicolumn{3}{l}{$n_T = 246$, $n_C = 440$, 299 events} \\
+Cox & 0.695 (0.544, 0.888) & $0$ \\
+MH-Halley & 0.695 (0.544, 0.888) & $4.2 \times 10^{-12}$ \\
+MH-Newton & 0.695 (0.544, 0.888) & $2.5 \times 10^{-8}$ \\
+Pike-Halley & 0.695 (0.544, 0.888) & $2.0 \times 10^{-9}$ \\
+Pike-Newton & 0.695 (0.544, 0.888) & $1.6 \times 10^{-6}$ \\
+MH & 0.695 (0.543, 0.888) & $3.7 \times 10^{-4}$ \\
+Pike & 0.697 (0.553, 0.879) & $2.9 \times 10^{-3}$ \\
+Peto & 0.707 (0.560, 0.892) & $1.7 \times 10^{-2}$ \\
+\midrule
+\multicolumn{3}{l}{\texttt{gbsg}, stratified by tumour grade} \\
+\multicolumn{3}{l}{$n_T = 246$, $n_C = 440$, 299 events, 3 strata} \\
+Cox & 0.712 (0.557, 0.911) & $0$ \\
+MH-Halley & 0.712 (0.557, 0.911) & $1.4 \times 10^{-11}$ \\
+MH-Newton & 0.712 (0.557, 0.911) & $5.6 \times 10^{-8}$ \\
+Pike-Halley & 0.712 (0.557, 0.911) & $1.3 \times 10^{-8}$ \\
+Pike-Newton & 0.712 (0.557, 0.911) & $5.2 \times 10^{-6}$ \\
+MH & 0.712 (0.556, 0.910) & $5.6 \times 10^{-4}$ \\
+Pike & 0.716 (0.567, 0.903) & $5.4 \times 10^{-3}$ \\
+Peto & 0.722 (0.572, 0.913) & $1.5 \times 10^{-2}$ \\
+\midrule
+\multicolumn{3}{l}{\texttt{pharmacoSmoking}} \\
+\multicolumn{3}{l}{$n_T = 61$, $n_C = 64$, 89 events} \\
+Cox & 0.546 (0.358, 0.834) & $0$ \\
+MH-Halley & 0.546 (0.358, 0.834) & $1.7 \times 10^{-8}$ \\
+MH-Newton & 0.546 (0.358, 0.834) & $2.9 \times 10^{-6}$ \\
+Pike-Halley & 0.546 (0.358, 0.834) & $5.2 \times 10^{-7}$ \\
+Pike-Newton & 0.546 (0.358, 0.834) & $2.8 \times 10^{-5}$ \\
+MH & 0.549 (0.358, 0.843) & $6.0 \times 10^{-3}$ \\
+Pike & 0.556 (0.366, 0.846) & $1.9 \times 10^{-2}$ \\
+Peto & 0.538 (0.350, 0.826) & $1.5 \times 10^{-2}$ \\
+\midrule
+\multicolumn{3}{l}{\texttt{pharmacoSmoking}, stratified by age group} \\
+\multicolumn{3}{l}{$n_T = 61$, $n_C = 64$, 89 events, 2 strata} \\
+Cox & 0.568 (0.372, 0.868) & $0$ \\
+MH-Halley & 0.568 (0.372, 0.868) & $9.6 \times 10^{-9}$ \\
+MH-Newton & 0.568 (0.372, 0.868) & $2.0 \times 10^{-6}$ \\
+Pike-Halley & 0.568 (0.372, 0.868) & $3.9 \times 10^{-7}$ \\
+Pike-Newton & 0.568 (0.372, 0.868) & $2.3 \times 10^{-5}$ \\
+MH & 0.571 (0.372, 0.876) & $4.9 \times 10^{-3}$ \\
+Pike & 0.578 (0.380, 0.877) & $1.7 \times 10^{-2}$ \\
+Peto & 0.560 (0.364, 0.859) & $1.5 \times 10^{-2}$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize Treatment groups: \texttt{hormon} = 1 in \texttt{gbsg} and \texttt{grp} = combination in \texttt{pharmacoSmoking}. Cox: \texttt{survival::coxph()}. The results with the Breslow handling of ties are in Table~S6.\par}
+\end{table}

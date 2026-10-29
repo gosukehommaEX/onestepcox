@@ -1,0 +1,27 @@
+\begin{table}
+\caption{Computing time in microseconds (median of 200 repetitions) for one dataset with hazard ratio 0.5 and 1:1 allocation}
+\label{tab:timing}
+\centering
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+$n_T + n_C$ & 200 & 1,000 & 5,000 & 20,000 \\
+Events & 80 & 400 & 2,000 & 8,000 \\
+Distinct event times & 80 & 400 & 2,000 & 8,000 \\
+\midrule
+Risk-set summaries (aggregation) & 81.2 & 154 & 486 & 1,804 \\
+MH anchor and Halley step & 24.9 & 40.8 & 75.8 & 310 \\
+Newton-Raphson from MH, tolerance $10^{-8}$ & 38 & 63.5 & 143 & 458 \\
+Newton-Raphson from MH, tolerance $10^{-12}$ & 39.5 & 74.8 & 139 & 605 \\
+\texttt{EstHR()}, MH-Halley & 364 & 518 & 1,010 & 3,066 \\
+\texttt{EstHR()}, Cox-NR & 350 & 543 & 1,068 & 3,654 \\
+\texttt{EstHR()}, Cox & 2,537 & 3,609 & 7,609 & 27,976 \\
+\texttt{survival::coxph()}, default settings & 2,138 & 3,453 & 8,643 & 39,258 \\
+\midrule
+Iterations, tolerance $10^{-8}$ & 3 & 3 & 3 & 2 \\
+Iterations, tolerance $10^{-12}$ & 3 & 3 & 3 & 3 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize The first row times the computation of the risk-set summaries; the next three rows start from summaries computed beforehand, so that the closed-form step and the iteration are compared on the same summaries. The times of \texttt{EstHR()} include the checks of the input and the risk-set summaries. Machine: Windows, 10 x64, x86-64.\par}
+\end{table}
