@@ -96,7 +96,9 @@ limit_plot <- function(lims) {
     ggplot2::labs(x = "Hazard ratio",
                   y = "|Large-sample bias| of the log hazard ratio") +
     onestepcox:::plot_theme(base_size) +
-    onestepcox:::plot_legend("bottom", k = length(limit_methods))
+    # One row of four methods (the default would be three and one)
+    onestepcox:::plot_legend("bottom", legend_ncol = length(limit_methods),
+                             k = length(limit_methods))
   if (length(lims) > 1L) p <- p + ggplot2::facet_wrap(~ design, ncol = 2)
   p
 }
@@ -167,9 +169,12 @@ growth_plot <- function(d, ylab, settings, plateau = NULL, facet = NULL) {
     ggplot2::geom_line(linewidth = 0.4) +
     ggplot2::geom_point(size = 1) +
     facet +
+    # Twice the default expansion, so that the label 100,000 of one panel
+    # does not run into the label 100 of the next
     ggplot2::scale_x_log10(breaks = c(1e2, 1e3, 1e4, 1e5),
                            labels = c("100", "1,000", "10,000",
-                                      "100,000")) +
+                                      "100,000"),
+                           expand = ggplot2::expansion(mult = 0.1)) +
     ggplot2::scale_y_log10() +
     onestepcox:::plot_scales(growth_methods, label_of(growth_methods),
                              shape = growth_shapes,
