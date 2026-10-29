@@ -130,10 +130,95 @@ paragraph columns of Tables S1 and S7). The long tables (Tables S2 to S4 and
 S6) need longtable, and Tables S2 to S4, which are set on landscape pages,
 need pdflscape.
 
+## Numbers of the article and copies to the manuscript
+
+Every number written in the main text, the Supporting Information, or the
+cover letter is entered in the ledger `number_locations.csv` before it is
+written. The ledger is a UTF-8 file, edited as text (Excel's plain CSV is in
+another encoding). Its columns are `id`, `file` (`main.tex`,
+`supporting_information.tex`, or `cover_letter.tex`), `anchor` (text of the
+.tex around the number, found exactly once; avoid `\"` in it), `text_value`
+(the number as written), `source_file` (an .rds or .csv file of the results,
+relative to the root of the package), `source_expr` (one R expression),
+`rounding` (the rule that writes the value as in the text), and `type`:
+
+- `computed`: a result; `source_expr` uses `x`, the content of
+  `source_file`;
+- `input`: a setting of the simulations; `source_expr` uses an object of
+  `settings.R` (such as `n_rep(10000L)` or `event_frac`); a design value that
+  is not in `settings.R` is read from the results as `computed`;
+- `literature:<bibkey>`: a number taken from a cited work; only the
+  citation of `<bibkey>` in the same file is checked by the scripts, and the
+  value is checked against the cited work by hand.
+
+The rounding rules are described at the top of `number_check.R` and tested
+on `number_rules_test.csv`. The values are rounded with `round()`, as the
+tables are (`fmt_fixed()` in `figure_helpers.R`), or with `signif()` for the
+rules `signif` and `approx`, so that at a decimal tie (such as 94.45 written
+with one decimal) the text follows R. The rules `signif` and `approx` write
+no trailing zeros (0.10 needs `fixed:2`). A negative number is written
+`$-0.012$`, and thousands are separated by `,` or `{,}` (not `\,`).
+
+After any change of the results, of `settings.R`, of the ledger, or of the
+text, run, from the root of the package in a fresh R session,
+
+```r
+source("inst/scripts/number_check.R")
+source("inst/scripts/copy_results.R")
+```
+
+and then, from the folder `Manuscript`,
+
+```
+python3 tools/verify_copies.py
+python3 tools/check_numbers.py
+python3 tools/classify_numbers.py
+```
+
+Each Python script passes with `RESULT: PASS` (exit status 0); the reports
+are in `Manuscript/tools/logs/`.
+
+- `number_check.R` recomputes each number of type `computed` or `input` and
+  writes `results/number_check.csv`, with the MD5 of each source file (of
+  `settings.R` for an input without a source file).
+- `copy_results.R` copies the `.tex` tables and the `.pdf` and `.eps`
+  figures of `results/` (not those of `results/quick/`) to
+  `Manuscript/Main_body/` and `Manuscript/Supp_info/`, and records their MD5
+  in `Manuscript/tools/logs/copy_results.csv`. The manuscript folder is
+  `../../Manuscript` from the root of the package, or the one given by
+  `options(onestepcox.manuscript = "<path>")`. Copies of earlier runs are not
+  removed; `verify_copies.py` reports them, and they are moved by hand to
+  `_to_delete/`.
+- `verify_copies.py` checks the copies, and that every file that `main.tex`
+  and `supporting_information.tex` read with `\input`, `\include`,
+  `\subfile`, or `\includegraphics` is one of them (so the text is written in
+  `main.tex` and `supporting_information.tex`, not in section files).
+- `check_numbers.py` checks each row of the ledger: the anchor in the text,
+  the text value in it with its sign, and the result of `number_check.R`,
+  which must be up to date with the ledger and the source files.
+- `classify_numbers.py` lists every number of the text, outside the
+  arguments of commands such as `\cite`, `\ref`, `\label`, `\input`,
+  `\includegraphics`, and `\url` and outside lengths, and fails on any
+  number that is not inside an anchor of the ledger, inside an anchor of
+  `Manuscript/tools/number_whitelist.csv`, the number of a table, figure,
+  section, equation, or the like (`Table~1`, `Figures 2--4`, `Section 2.1`;
+  write `Tables 1--3` rather than `Tables 1, 2 and 3`), or a single digit in
+  mathematics. A single digit in inline mathematics is a value, and fails,
+  when it is all of the formula (`$2$`) or follows `=`, `<`, `>`, `\le`,
+  `\neq`, or the like outside a subscript or superscript (`$\theta = 5$`,
+  but not `$\sum_{i=1}^{n}$`); any single digit of a display equation is a
+  formula, while a number of two or more digits is checked as in the text.
+  A macro whose definition contains a number fails too, apart from the
+  macros of the layout (`\arraystretch` and the like) and the definitions
+  inside an anchor of the whitelist. Not read: the
+  preamble apart from macro definitions (`\title`, `\author`), a number
+  without a leading zero (`.5`), and a number right after `\\`.
+
 ## Computing time
 
-Rough estimates, to be replaced by the times in the run logs:
-`data_generate_main.R` about 1.5 hours (the grids about 1 hour, `fixed` and
-`local` about 30 minutes), `data_generate_supplement.R` about 30 minutes,
-and each table and figure script under a minute. The quick test run takes a
-few minutes.
+In the full run of 2026-10-29 (R 4.6.1 on Windows; `run_log_main.csv` and
+`run_log_supplement.csv`), `data_generate_main.R` took 90 minutes (the grids
+67 minutes, `fixed` and `local` 23 minutes) and `data_generate_supplement.R`
+32 minutes; the two table and figure scripts took under a minute each
+(times of their output files). In the quick test run, the two data scripts
+took 6 minutes.
