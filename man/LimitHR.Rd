@@ -24,14 +24,19 @@ fraction of subjects who would ever have an event.}
 dropout. Default 0.}
 }
 \value{
-A data frame with one row per hazard ratio and method and the
-  columns \code{HR}, \code{analysis_time} (calendar time of the analysis in
-  the limit), \code{method} (as in \code{EstHR()}), \code{limit} (limit of
-  the estimator of the log hazard ratio), and \code{bias}
+An object of class \code{c("LimitHR", "data.frame")}, a data
+  frame with one row per hazard ratio and method and the columns
+  \code{HR}, \code{analysis_time} (calendar time of the analysis in the
+  limit), \code{method} (as in \code{EstHR()}), \code{limit} (limit of the
+  estimator of the log hazard ratio), and \code{bias}
   (\code{limit - log(HR)}). The methods are \code{"MH_Halley"},
   \code{"MH_Newton"}, \code{"Pike_Halley"}, \code{"Pike_Newton"},
   \code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"}, \code{"MH"},
-  \code{"Pike"}, \code{"Peto"}, and \code{"Cox"}.
+  \code{"Pike"}, \code{"Peto"}, and \code{"Cox"}. The attribute
+  \code{design} holds the arguments other than \code{HR}.
+  \code{as.data.frame()} gives an object of class \code{"data.frame"}. See
+  \code{\link{print.LimitHR}} and \code{\link{plot.LimitHR}} for the
+  methods of \code{print()} and \code{plot()}.
 }
 \description{
 Computes the limits in probability of the log hazard ratio estimators of
@@ -71,8 +76,10 @@ same limits, and strata are not considered.
 \examples{
 lim <- LimitHR(HR = c(0.5, 2, 10), hazard_C = log(2) / 18,
                n_T = 100, n_C = 100, a = 12, E = 160)
+lim
+plot(lim)
 # Bias of the Pike anchor and of the Halley steps from each anchor
-subset(lim, method == "Pike" | method == "Pike_Halley" |
+subset(as.data.frame(lim), method == "Pike" | method == "Pike_Halley" |
          method == "MH_Halley")
 
 }

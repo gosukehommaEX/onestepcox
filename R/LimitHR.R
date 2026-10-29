@@ -19,14 +19,19 @@
 #' @param dropout_hazard Non-negative numeric. Hazard rate of independent
 #'   dropout. Default 0.
 #'
-#' @return A data frame with one row per hazard ratio and method and the
-#'   columns \code{HR}, \code{analysis_time} (calendar time of the analysis in
-#'   the limit), \code{method} (as in \code{EstHR()}), \code{limit} (limit of
-#'   the estimator of the log hazard ratio), and \code{bias}
+#' @return An object of class \code{c("LimitHR", "data.frame")}, a data
+#'   frame with one row per hazard ratio and method and the columns
+#'   \code{HR}, \code{analysis_time} (calendar time of the analysis in the
+#'   limit), \code{method} (as in \code{EstHR()}), \code{limit} (limit of the
+#'   estimator of the log hazard ratio), and \code{bias}
 #'   (\code{limit - log(HR)}). The methods are \code{"MH_Halley"},
 #'   \code{"MH_Newton"}, \code{"Pike_Halley"}, \code{"Pike_Newton"},
 #'   \code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"}, \code{"MH"},
-#'   \code{"Pike"}, \code{"Peto"}, and \code{"Cox"}.
+#'   \code{"Pike"}, \code{"Peto"}, and \code{"Cox"}. The attribute
+#'   \code{design} holds the arguments other than \code{HR}.
+#'   \code{as.data.frame()} gives an object of class \code{"data.frame"}. See
+#'   \code{\link{print.LimitHR}} and \code{\link{plot.LimitHR}} for the
+#'   methods of \code{print()} and \code{plot()}.
 #'
 #' @details
 #' Let \code{pi_T = n_T / (n_T + n_C)} and \code{pi_C = 1 - pi_T},
@@ -59,8 +64,10 @@
 #' @examples
 #' lim <- LimitHR(HR = c(0.5, 2, 10), hazard_C = log(2) / 18,
 #'                n_T = 100, n_C = 100, a = 12, E = 160)
+#' lim
+#' plot(lim)
 #' # Bias of the Pike anchor and of the Halley steps from each anchor
-#' subset(lim, method == "Pike" | method == "Pike_Halley" |
+#' subset(as.data.frame(lim), method == "Pike" | method == "Pike_Halley" |
 #'          method == "MH_Halley")
 #'
 #' @export
@@ -161,5 +168,9 @@ LimitHR <- function(HR, hazard_C, n_T, n_C, a, E, dropout_hazard = 0) {
                bias = unname(lim[methods]) - log(theta),
                stringsAsFactors = FALSE)
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  class(out) <- c("LimitHR", "data.frame")
+  attr(out, "design") <- c(hazard_C = hazard_C, n_T = n_T, n_C = n_C,
+                           a = a, E = E, dropout_hazard = dropout_hazard)
+  out
 }

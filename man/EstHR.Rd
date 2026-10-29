@@ -14,26 +14,33 @@ EstHR(
   strata = NULL,
   conf.level = 0.95,
   is_sorted = FALSE,
-  tol = 1e-12
+  tol = 1e-12,
+  data = NULL
 )
 }
 \arguments{
-\item{time}{Numeric vector of follow-up times.}
+\item{time}{Numeric vector of follow-up times, or a formula
+\code{Surv(time, event) ~ group}, optionally with \code{+ strata(s)}
+(see Formula interface in Details).}
 
 \item{event}{Vector of event indicators, 1 (event) or 0 (censored), or
-logical, aligned with \code{time}.}
+logical, aligned with \code{time}. With a formula, the data frame may be
+given here instead of in \code{data}, as in \code{coxph(formula, data)}.}
 
 \item{group}{Vector of group labels aligned with \code{time}. Subjects with
-\code{group != control} form the treatment group.}
+\code{group != control} form the treatment group. Not used with a
+formula.}
 
 \item{control}{Single value of \code{group} that identifies the control
-group.}
+group. With a formula, the default is the first level of the group
+variable if it is a factor and its smallest value otherwise, which is
+the reference level of \code{coxph()}.}
 
-\item{method}{Character string, one of \code{"MH_Halley"} (proposed),
-\code{"MH_Newton"}, \code{"Pike_Halley"}, \code{"Pike_Newton"},
-\code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"}, \code{"MH"},
-\code{"Pike"}, \code{"Peto"}, \code{"Cox"}, and \code{"Cox_NR"}. See
-Details.}
+\item{method}{Character vector of one or more of \code{"MH_Halley"}
+(proposed), \code{"MH_Newton"}, \code{"Pike_Halley"},
+\code{"Pike_Newton"}, \code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"},
+\code{"MH"}, \code{"Pike"}, \code{"Peto"}, \code{"Cox"}, and
+\code{"Cox_NR"}, without duplicates. See Details.}
 
 \item{ties}{Character string, \code{"efron"} (default, as in
 \code{survival::coxph()}) or \code{"breslow"}: the handling of tied
@@ -43,7 +50,8 @@ or \code{"Peto"}.}
 
 \item{strata}{Optional vector of stratum labels aligned with \code{time}.
 Each stratum has its own baseline hazard and the HR is common to all
-strata. Default \code{NULL} (no stratification).}
+strata. Default \code{NULL} (no stratification). With a formula, strata
+are given by \code{strata()} in the formula instead.}
 
 \item{conf.level}{Confidence level of the interval. Default 0.95.}
 
@@ -55,26 +63,46 @@ raised if they are not. Default \code{FALSE}.}
 \item{tol}{Positive convergence tolerance of \code{"Cox"} (passed to
 \code{survival::coxph.control()} as \code{eps}) and of \code{"Cox_NR"}
 (on the Newton step of the log HR). Default \code{1e-12}.}
+
+\item{data}{A data frame (or list) in which the variables of a formula are
+evaluated. Used only with a formula. Default \code{NULL} (the
+environment of the formula).}
 }
 \value{
-A named numeric vector with elements \code{coef} (log HR),
-  \code{exp(coef)} (HR), \code{se(coef)} (standard error of the log HR),
-  and the lower and upper confidence limits of the HR, named as in
-  \code{summary()} of a \code{coxph} fit (\code{"lower .95"} and
-  \code{"upper .95"} for \code{conf.level = 0.95}). All elements are
-  \code{NA} when the estimate cannot be computed, for example when there is
-  no event or no event in one of the groups.
+An object of class \code{"EstHR"}. For one method, a named numeric
+  vector with elements \code{coef} (log HR), \code{exp(coef)} (HR),
+  \code{se(coef)} (standard error of the log HR), and the lower and upper
+  confidence limits of the HR, named as in \code{summary()} of a
+  \code{coxph} fit (\code{"lower .95"} and \code{"upper .95"} for
+  \code{conf.level = 0.95}). For several methods, a matrix with one row
+  per method, in the order of \code{method}, and these five columns. The
+  elements are \code{NA} when the estimate cannot be computed, for example
+  when there is no event or no event in one of the groups.
+
+  The object has the attributes \code{method}, \code{ties}, and
+  \code{conf.level}; \code{groups} (the labels of the treatment and
+  control groups; the treatment label is the group of the first subject
+  of the treatment group); \code{n} and \code{events} (numbers of subjects
+  and events by group, named \code{treatment} and \code{control});
+  \code{n_strata} (1 without strata); and \code{n_removed} (rows removed
+  by the formula interface for missing values). Subsetting with \code{[}
+  or \code{[[} returns plain numbers. See \code{\link{print.EstHR}} and
+  \code{\link{plot.EstHR}} for the methods of \code{print()} and
+  \code{plot()}.
 }
 \description{
 Estimates the hazard ratio (HR) of the treatment group relative to the
 control group, with its standard error on the log scale and a Wald
-confidence interval, by one of eleven methods: the proposed closed-form
-estimator (\code{"MH_Halley"}), five other one-step corrections, the
+confidence interval, by one or more of eleven methods: the proposed
+closed-form estimator (\code{"MH_Halley"}), five other one-step
+corrections, the
 Mantel-Haenszel, Pike, and Peto estimators, and the Cox partial likelihood
 estimator computed either by \code{survival::coxph()} or by Newton-Raphson
 iteration on the same risk-set summaries as the closed-form estimators.
 Tied event times are handled by the Efron or the Breslow method, and the
-baseline hazard may differ between strata.
+baseline hazard may differ between strata. The data are given either as
+vectors or by a formula \code{Surv(time, event) ~ group + strata(s)} with
+a data frame, as in \code{survival::coxph()}.
 }
 \details{
 Let \code{t_k} (\code{k = 1, ..., K}) be the distinct event times, within
@@ -142,25 +170,52 @@ The Cox estimate is computed in two ways.
 
 Swapping the roles of the groups changes the sign of the log HR of every
 method and leaves the standard error unchanged.
+
+Formula interface. With a formula \code{Surv(time, event) ~ group} as the
+first argument, the variables are taken from \code{data} (or from the
+environment of the formula), as in \code{survival::coxph()}. The response
+must be \code{Surv(time, event)} for right-censored data; an event
+indicator coded 1 and 2 (2 for an event) is accepted, as by
+\code{Surv()}. The right-hand side has one group term, a variable or an
+expression such as \code{factor(x)} with exactly two distinct values, and
+optionally \code{strata()} terms; several variables in \code{strata()} (or
+several \code{strata()} terms) define strata by their combinations. Other
+terms, interactions, and \code{.} are not allowed. Rows with a missing
+value in any of the variables are removed, and their number is stored in
+the attribute \code{n_removed}. The arguments \code{group} and
+\code{strata} are not used with a formula, and \code{method} and the
+other arguments are given by name.
 }
 \examples{
+# Formula interface, as in survival::coxph()
+EstHR(Surv(rfstime, status) ~ hormon, data = survival::gbsg,
+      method = "MH_Halley")
+
+# Several methods, stratified by tumour grade
+est <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade),
+             data = survival::gbsg,
+             method = c("MH_Halley", "Pike", "Peto", "Cox"))
+est
+plot(est)
+
+# Vectors
 set.seed(1)
 n <- 200
 time  <- c(rexp(n / 2, rate = 0.10), rexp(n / 2, rate = 0.15))
 event <- rbinom(n, 1, 0.8)
 group <- rep(c("C", "T"), each = n / 2)
 EstHR(time, event, group, control = "C", method = "MH_Halley")
-EstHR(time, event, group, control = "C", method = "Cox")
 
-# All methods, Breslow handling of ties
+# All methods, Breslow handling of ties; subsetting gives a plain matrix
 methods <- c("MH_Halley", "MH_Newton", "Pike_Halley", "Pike_Newton",
              "MH_Chebyshev", "Pike_Chebyshev", "MH", "Pike", "Peto",
              "Cox", "Cox_NR")
-t(sapply(methods, function(m) {
-  EstHR(ceiling(time), event, group, "C", m, ties = "breslow")
-}))
+est_all <- EstHR(ceiling(time), event, group, "C", methods,
+                 ties = "breslow")
+est_all[, c("coef", "se(coef)")]
 
 }
 \seealso{
-\code{\link{RiskTable}} for the risk-set summaries.
+\code{\link{RiskTable}} for the risk-set summaries,
+  \code{\link{print.EstHR}} and \code{\link{plot.EstHR}}.
 }

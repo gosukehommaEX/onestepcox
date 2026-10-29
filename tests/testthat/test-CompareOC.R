@@ -22,7 +22,12 @@ test_that("Output has the documented structure", {
     nsim      = 30,
     seed      = 1
   )
+  expect_s3_class(res, "CompareOC")
   expect_named(res, c("estimates", "summary"))
+  expect_identical(attr(res, "reference"), "Cox")
+  expect_identical(attr(res, "ties"), "efron")
+  expect_identical(attr(res, "conf.level"), 0.95)
+  expect_identical(attr(res, "nsim"), 30)
   expect_named(res$estimates,
                c("label", "simID", "method", "coef", "se", "lower", "upper"))
   expect_named(res$summary,

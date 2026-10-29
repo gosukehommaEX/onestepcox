@@ -50,7 +50,12 @@ test_that("The one-step limits from the Pike anchor are ordered", {
 test_that("Output has one row per hazard ratio and method", {
   lim <- LimitHR(c(0.5, 2, 3), hazard_C = 0.05, n_T = 100, n_C = 100,
                  a = 10, E = 120)
+  expect_identical(class(lim), c("LimitHR", "data.frame"))
   expect_named(lim, c("HR", "analysis_time", "method", "limit", "bias"))
+  expect_identical(attr(lim, "design"),
+                   c(hazard_C = 0.05, n_T = 100, n_C = 100, a = 10, E = 120,
+                     dropout_hazard = 0))
+  expect_identical(class(as.data.frame(lim)), "data.frame")
   expect_equal(nrow(lim), 3 * 10)
   expect_identical(lim$method[1:10],
                    c("MH_Halley", "MH_Newton", "Pike_Halley", "Pike_Newton",

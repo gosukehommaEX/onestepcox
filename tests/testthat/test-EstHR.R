@@ -211,7 +211,8 @@ test_that("Efron and Breslow differ only for methods using the score", {
     e <- EstHR(d$time, d$event, d$group, d$control, m, ties = "efron")
     b <- EstHR(d$time, d$event, d$group, d$control, m, ties = "breslow")
     if (m %in% c("MH", "Pike", "Peto")) {
-      expect_identical(e, b, info = m)
+      # c() drops the attribute ties, which differs
+      expect_identical(c(e), c(b), info = m)
     } else {
       expect_gt(abs(e[["coef"]] - b[["coef"]]), 1e-6)
     }
@@ -221,7 +222,7 @@ test_that("Efron and Breslow differ only for methods using the score", {
     e <- EstHR(d$time, d$event, d$group, d$control, m, ties = "efron")
     b <- EstHR(d$time, d$event, d$group, d$control, m, ties = "breslow")
     tol <- if (m == "Cox") 1e-8 else 1e-10
-    expect_equal(e, b, tolerance = tol, info = m)
+    expect_equal(c(e), c(b), tolerance = tol, info = m)
   }
 })
 
@@ -274,4 +275,117 @@ test_that("Invalid arguments give informative errors", {
   expect_error(EstHR(c(1, 2, 3), c(1, 0), c("C", "T", "C"), "C", "MH"),
                "same length")
   expect_error(EstHR(d$time, d$event, d$group, 3, "MH_Halley"), "control")
+  expect_error(EstHR(d$time, d$event, d$group, d$control, c("MH", "PiHE")),
+               "method")
+  expect_error(EstHR(d$time, d$event, d$group, d$control, c("MH", "MH")),
+               "duplicates")
+  expect_error(EstHR(d$time, d$event, d$group, d$control, "MH",
+                     data = survival::ovarian), "only with a formula")
+  # With a formula, a method given by position is taken as 'group'
+  expect_error(EstHR(Surv(futime, fustat) ~ rx, survival::ovarian, "MH"),
+               "by name")
+})
+
+# ---- Several methods and the attributes ---------------------------------
+
+test_that("Several methods give a matrix with the rows of single methods", {
+  d <- test_data("gbsg_grade")
+  est <- EstHR(d$time, d$event, d$group, d$control, all_methods,
+               strata = d$strata)
+  expect_s3_class(est, "EstHR")
+  expect_true(is.matrix(est))
+  expect_identical(dimnames(est),
+                   list(all_methods, c("coef", "exp(coef)", "se(coef)",
+                                       "lower .95", "upper .95")))
+  expect_identical(attr(est, "method"), all_methods)
+  for (m in all_methods) {
+    one <- EstHR(d$time, d$event, d$group, d$control, m, strata = d$strata)
+    expect_identical(est[m, ], c(one), info = m)
+  }
+})
+
+test_that("The attributes describe the data and the settings", {
+  d <- test_data("gbsg_grade")
+  est <- EstHR(d$time, d$event, d$group, d$control, "MH_Halley",
+               ties = "breslow", strata = d$strata, conf.level = 0.9)
+  expect_s3_class(est, "EstHR")
+  expect_identical(attr(est, "method"), "MH_Halley")
+  expect_identical(attr(est, "ties"), "breslow")
+  expect_identical(attr(est, "conf.level"), 0.9)
+  expect_identical(attr(est, "groups"), c(treatment = "1", control = "0"))
+  trt <- d$group != d$control
+  expect_equal(attr(est, "n"), c(treatment = sum(trt), control = sum(!trt)))
+  expect_equal(attr(est, "events"),
+               c(treatment = sum(d$event[trt]), control = sum(d$event[!trt])))
+  expect_identical(attr(est, "n_strata"), 3L)
+  expect_identical(attr(est, "n_removed"), 0L)
+  # Subsetting gives plain numbers
+  expect_false(inherits(est["coef"], "EstHR"))
+  expect_null(attr(est[1:5], "method"))
+})
+
+# ---- Formula interface ----------------------------------------------------
+
+test_that("The formula interface gives the results of the vector interface", {
+  gb <- survival::gbsg
+  for (m in all_methods) {
+    a <- EstHR(gb$rfstime, gb$status, gb$hormon, 0, m, strata = gb$grade)
+    b <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade), data = gb,
+               method = m)
+    expect_identical(b, a, info = m)
+  }
+  # The data as the second argument, and several methods
+  a <- EstHR(gb$rfstime, gb$status, gb$hormon, 0, c("MH_Halley", "Cox"),
+             ties = "breslow")
+  b <- EstHR(Surv(rfstime, status) ~ hormon, gb,
+             method = c("MH_Halley", "Cox"), ties = "breslow")
+  expect_identical(b, a)
+})
+
+test_that("Several strata variables stratify by their combinations", {
+  gb <- survival::gbsg
+  s <- interaction(gb$grade, gb$meno)
+  for (m in c("MH_Halley", "Pike", "Cox_NR")) {
+    a <- EstHR(gb$rfstime, gb$status, gb$hormon, 0, m, strata = s)
+    b <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade, meno),
+               data = gb, method = m)
+    expect_equal(c(b), c(a), tolerance = 1e-12, info = m)
+    expect_identical(attr(b, "n_strata"), 6L)
+  }
+})
+
+test_that("The control of a factor defaults to its first level", {
+  skip_if_not_installed("asaur")
+  ps <- asaur::pharmacoSmoking
+  a <- EstHR(ps$ttr, ps$relapse, ps$grp, "combination", "MH_Halley",
+             strata = ps$ageGroup2)
+  b <- EstHR(Surv(ttr, relapse) ~ grp + strata(ageGroup2), data = ps,
+             method = "MH_Halley")
+  expect_identical(b, a)
+  # A control given explicitly reverses the comparison
+  r <- EstHR(Surv(ttr, relapse) ~ grp + strata(ageGroup2), data = ps,
+             method = "MH_Halley", control = "patchOnly")
+  expect_equal(r[["coef"]], -a[["coef"]], tolerance = 1e-10)
+  expect_identical(attr(r, "groups"),
+                   c(treatment = "combination", control = "patchOnly"))
+})
+
+test_that("Status coded 1 and 2 and rows with missing values are handled", {
+  # survival::lung has status 1 (censored) and 2 (dead), and one missing
+  # value of ph.ecog
+  lung <- survival::lung
+  ok <- !is.na(lung$ph.ecog)
+  for (m in c("MH_Halley", "Cox")) {
+    a <- EstHR(lung$time[ok], lung$status[ok] - 1, lung$sex[ok], 1, m,
+               strata = lung$ph.ecog[ok])
+    b <- EstHR(Surv(time, status) ~ sex + strata(ph.ecog), data = lung,
+               method = m)
+    expect_identical(c(b), c(a), info = m)
+    expect_identical(attr(b, "n_removed"), 1L)
+  }
+  fit <- survival::coxph(Surv(time, status) ~ sex + strata(ph.ecog),
+                         data = lung)
+  expect_equal(b[["coef"]], unname(stats::coef(fit)), tolerance = 1e-7)
+  expect_equal(b[["se(coef)"]], unname(sqrt(fit$var[1, 1])),
+               tolerance = 1e-7)
 })

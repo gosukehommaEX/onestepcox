@@ -82,6 +82,18 @@ test_that("Row order does not matter and is_sorted = TRUE gives the same table",
                          strata = d$strata[o], is_sorted = TRUE), rt)
 })
 
+test_that("The formula interface gives the table of the vector interface", {
+  gb <- survival::gbsg
+  a <- RiskTable(gb$rfstime, gb$status, gb$hormon, 0, strata = gb$grade)
+  b <- RiskTable(Surv(rfstime, status) ~ hormon + strata(grade), data = gb)
+  expect_identical(b, a)
+  a <- RiskTable(gb$rfstime, gb$status, gb$hormon, 0)
+  b <- RiskTable(Surv(rfstime, status) ~ hormon, gb)
+  expect_identical(b, a)
+  expect_error(RiskTable(hand_time, hand_event, hand_group, "C", data = gb),
+               "only with a formula")
+})
+
 test_that("Empty input gives a table without rows", {
   rt <- RiskTable(numeric(0), numeric(0), character(0), "C")
   expect_equal(nrow(rt), 0L)

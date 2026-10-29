@@ -31,7 +31,11 @@
 #'   \code{"efron"} (default) or \code{"breslow"}.
 #' @param conf.level Confidence level of the intervals. Default 0.95.
 #'
-#' @return A list with two components.
+#' @return An object of class \code{"CompareOC"}, a list with two components
+#'   and the attributes \code{reference}, \code{ties}, \code{conf.level}, and
+#'   \code{nsim}. See \code{\link{print.CompareOC}} and
+#'   \code{\link{plot.CompareOC}} for the methods of \code{print()} and
+#'   \code{plot()}.
 #'   \describe{
 #'     \item{estimates}{A data frame in long format with one row per
 #'       scenario, replicate, and method, and the columns \code{label},
@@ -77,6 +81,8 @@
 #'   nsim      = 50,
 #'   seed      = 1
 #' )
+#' res
+#' plot(res, what = "deviation")
 #' res$summary
 #'
 #' # A stratified scenario with times in whole months
@@ -203,5 +209,7 @@ CompareOC <- function(scenarios, methods, nsim, seed = NULL,
   out_summ <- do.call(rbind, summ_rows)
   rownames(out_est) <- NULL
   rownames(out_summ) <- NULL
-  list(estimates = out_est, summary = out_summ)
+  structure(list(estimates = out_est, summary = out_summ),
+            class = "CompareOC", reference = reference, ties = ties,
+            conf.level = conf.level, nsim = nsim)
 }

@@ -30,6 +30,8 @@ Depends:
     R (>= 4.0.0)
 Imports:
     data.table,
+    graphics,
+    grDevices,
     stats,
     survival,
     utils

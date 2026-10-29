@@ -27,6 +27,11 @@ The main functions are
   \item{\code{\link{LimitHR}}}{Large-sample limits of the estimators under
     the design of \code{GenSimData()}.}
 }
+\code{EstHR()} and \code{RiskTable()} accept vectors or a formula
+\code{Surv(time, event) ~ group + strata(s)}, as in
+\code{survival::coxph()}. The results of \code{EstHR()},
+\code{CompareOC()}, and \code{LimitHR()} have methods of \code{print()}
+and \code{plot()}.
 }
 \seealso{
 Useful links:

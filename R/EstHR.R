@@ -2,26 +2,35 @@
 #'
 #' Estimates the hazard ratio (HR) of the treatment group relative to the
 #' control group, with its standard error on the log scale and a Wald
-#' confidence interval, by one of eleven methods: the proposed closed-form
-#' estimator (\code{"MH_Halley"}), five other one-step corrections, the
+#' confidence interval, by one or more of eleven methods: the proposed
+#' closed-form estimator (\code{"MH_Halley"}), five other one-step
+#' corrections, the
 #' Mantel-Haenszel, Pike, and Peto estimators, and the Cox partial likelihood
 #' estimator computed either by \code{survival::coxph()} or by Newton-Raphson
 #' iteration on the same risk-set summaries as the closed-form estimators.
 #' Tied event times are handled by the Efron or the Breslow method, and the
-#' baseline hazard may differ between strata.
+#' baseline hazard may differ between strata. The data are given either as
+#' vectors or by a formula \code{Surv(time, event) ~ group + strata(s)} with
+#' a data frame, as in \code{survival::coxph()}.
 #'
-#' @param time Numeric vector of follow-up times.
+#' @param time Numeric vector of follow-up times, or a formula
+#'   \code{Surv(time, event) ~ group}, optionally with \code{+ strata(s)}
+#'   (see Formula interface in Details).
 #' @param event Vector of event indicators, 1 (event) or 0 (censored), or
-#'   logical, aligned with \code{time}.
+#'   logical, aligned with \code{time}. With a formula, the data frame may be
+#'   given here instead of in \code{data}, as in \code{coxph(formula, data)}.
 #' @param group Vector of group labels aligned with \code{time}. Subjects with
-#'   \code{group != control} form the treatment group.
+#'   \code{group != control} form the treatment group. Not used with a
+#'   formula.
 #' @param control Single value of \code{group} that identifies the control
-#'   group.
-#' @param method Character string, one of \code{"MH_Halley"} (proposed),
-#'   \code{"MH_Newton"}, \code{"Pike_Halley"}, \code{"Pike_Newton"},
-#'   \code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"}, \code{"MH"},
-#'   \code{"Pike"}, \code{"Peto"}, \code{"Cox"}, and \code{"Cox_NR"}. See
-#'   Details.
+#'   group. With a formula, the default is the first level of the group
+#'   variable if it is a factor and its smallest value otherwise, which is
+#'   the reference level of \code{coxph()}.
+#' @param method Character vector of one or more of \code{"MH_Halley"}
+#'   (proposed), \code{"MH_Newton"}, \code{"Pike_Halley"},
+#'   \code{"Pike_Newton"}, \code{"MH_Chebyshev"}, \code{"Pike_Chebyshev"},
+#'   \code{"MH"}, \code{"Pike"}, \code{"Peto"}, \code{"Cox"}, and
+#'   \code{"Cox_NR"}, without duplicates. See Details.
 #' @param ties Character string, \code{"efron"} (default, as in
 #'   \code{survival::coxph()}) or \code{"breslow"}: the handling of tied
 #'   event times in the partial likelihood. It affects the one-step methods,
@@ -29,7 +38,8 @@
 #'   or \code{"Peto"}.
 #' @param strata Optional vector of stratum labels aligned with \code{time}.
 #'   Each stratum has its own baseline hazard and the HR is common to all
-#'   strata. Default \code{NULL} (no stratification).
+#'   strata. Default \code{NULL} (no stratification). With a formula, strata
+#'   are given by \code{strata()} in the formula instead.
 #' @param conf.level Confidence level of the interval. Default 0.95.
 #' @param is_sorted Logical. If \code{TRUE}, the rows are taken to be sorted
 #'   in ascending order of \code{time} within strata, with the rows of each
@@ -38,14 +48,30 @@
 #' @param tol Positive convergence tolerance of \code{"Cox"} (passed to
 #'   \code{survival::coxph.control()} as \code{eps}) and of \code{"Cox_NR"}
 #'   (on the Newton step of the log HR). Default \code{1e-12}.
+#' @param data A data frame (or list) in which the variables of a formula are
+#'   evaluated. Used only with a formula. Default \code{NULL} (the
+#'   environment of the formula).
 #'
-#' @return A named numeric vector with elements \code{coef} (log HR),
-#'   \code{exp(coef)} (HR), \code{se(coef)} (standard error of the log HR),
-#'   and the lower and upper confidence limits of the HR, named as in
-#'   \code{summary()} of a \code{coxph} fit (\code{"lower .95"} and
-#'   \code{"upper .95"} for \code{conf.level = 0.95}). All elements are
-#'   \code{NA} when the estimate cannot be computed, for example when there is
-#'   no event or no event in one of the groups.
+#' @return An object of class \code{"EstHR"}. For one method, a named numeric
+#'   vector with elements \code{coef} (log HR), \code{exp(coef)} (HR),
+#'   \code{se(coef)} (standard error of the log HR), and the lower and upper
+#'   confidence limits of the HR, named as in \code{summary()} of a
+#'   \code{coxph} fit (\code{"lower .95"} and \code{"upper .95"} for
+#'   \code{conf.level = 0.95}). For several methods, a matrix with one row
+#'   per method, in the order of \code{method}, and these five columns. The
+#'   elements are \code{NA} when the estimate cannot be computed, for example
+#'   when there is no event or no event in one of the groups.
+#'
+#'   The object has the attributes \code{method}, \code{ties}, and
+#'   \code{conf.level}; \code{groups} (the labels of the treatment and
+#'   control groups; the treatment label is the group of the first subject
+#'   of the treatment group); \code{n} and \code{events} (numbers of subjects
+#'   and events by group, named \code{treatment} and \code{control});
+#'   \code{n_strata} (1 without strata); and \code{n_removed} (rows removed
+#'   by the formula interface for missing values). Subsetting with \code{[}
+#'   or \code{[[} returns plain numbers. See \code{\link{print.EstHR}} and
+#'   \code{\link{plot.EstHR}} for the methods of \code{print()} and
+#'   \code{plot()}.
 #'
 #' @details
 #' Let \code{t_k} (\code{k = 1, ..., K}) be the distinct event times, within
@@ -114,37 +140,85 @@
 #' Swapping the roles of the groups changes the sign of the log HR of every
 #' method and leaves the standard error unchanged.
 #'
-#' @seealso \code{\link{RiskTable}} for the risk-set summaries.
+#' Formula interface. With a formula \code{Surv(time, event) ~ group} as the
+#' first argument, the variables are taken from \code{data} (or from the
+#' environment of the formula), as in \code{survival::coxph()}. The response
+#' must be \code{Surv(time, event)} for right-censored data; an event
+#' indicator coded 1 and 2 (2 for an event) is accepted, as by
+#' \code{Surv()}. The right-hand side has one group term, a variable or an
+#' expression such as \code{factor(x)} with exactly two distinct values, and
+#' optionally \code{strata()} terms; several variables in \code{strata()} (or
+#' several \code{strata()} terms) define strata by their combinations. Other
+#' terms, interactions, and \code{.} are not allowed. Rows with a missing
+#' value in any of the variables are removed, and their number is stored in
+#' the attribute \code{n_removed}. The arguments \code{group} and
+#' \code{strata} are not used with a formula, and \code{method} and the
+#' other arguments are given by name.
+#'
+#' @seealso \code{\link{RiskTable}} for the risk-set summaries,
+#'   \code{\link{print.EstHR}} and \code{\link{plot.EstHR}}.
 #'
 #' @examples
+#' # Formula interface, as in survival::coxph()
+#' EstHR(Surv(rfstime, status) ~ hormon, data = survival::gbsg,
+#'       method = "MH_Halley")
+#'
+#' # Several methods, stratified by tumour grade
+#' est <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade),
+#'              data = survival::gbsg,
+#'              method = c("MH_Halley", "Pike", "Peto", "Cox"))
+#' est
+#' plot(est)
+#'
+#' # Vectors
 #' set.seed(1)
 #' n <- 200
 #' time  <- c(rexp(n / 2, rate = 0.10), rexp(n / 2, rate = 0.15))
 #' event <- rbinom(n, 1, 0.8)
 #' group <- rep(c("C", "T"), each = n / 2)
 #' EstHR(time, event, group, control = "C", method = "MH_Halley")
-#' EstHR(time, event, group, control = "C", method = "Cox")
 #'
-#' # All methods, Breslow handling of ties
+#' # All methods, Breslow handling of ties; subsetting gives a plain matrix
 #' methods <- c("MH_Halley", "MH_Newton", "Pike_Halley", "Pike_Newton",
 #'              "MH_Chebyshev", "Pike_Chebyshev", "MH", "Pike", "Peto",
 #'              "Cox", "Cox_NR")
-#' t(sapply(methods, function(m) {
-#'   EstHR(ceiling(time), event, group, "C", m, ties = "breslow")
-#' }))
+#' est_all <- EstHR(ceiling(time), event, group, "C", methods,
+#'                  ties = "breslow")
+#' est_all[, c("coef", "se(coef)")]
 #'
 #' @importFrom survival Surv strata
 #' @export
 EstHR <- function(time, event, group, control, method,
                   ties = "efron", strata = NULL, conf.level = 0.95,
-                  is_sorted = FALSE, tol = 1e-12) {
+                  is_sorted = FALSE, tol = 1e-12, data = NULL) {
+
+  # Formula interface: Surv(time, event) ~ group + strata(s)
+  n_removed <- 0L
+  if (inherits(time, "formula")) {
+    f <- parse_formula(time, data,
+                       event = if (missing(event)) NULL else event,
+                       group = if (missing(group)) NULL else group,
+                       strata = strata)
+    time <- f$time
+    event <- f$event
+    group <- f$group
+    strata <- f$strata
+    if (missing(control)) control <- f$control
+    n_removed <- f$n_removed
+  } else if (!is.null(data)) {
+    stop("'data' is used only with a formula")
+  }
 
   valid_methods <- c("MH_Halley", "MH_Newton", "Pike_Halley", "Pike_Newton",
                      "MH_Chebyshev", "Pike_Chebyshev", "MH", "Pike", "Peto",
                      "Cox", "Cox_NR")
-  if (length(method) != 1L || !method %in% valid_methods) {
-    stop(sprintf("'method' must be one of: %s",
+  if (!is.character(method) || length(method) == 0L || anyNA(method) ||
+      !all(method %in% valid_methods)) {
+    stop(sprintf("'method' must be one or more of: %s",
                  paste(valid_methods, collapse = ", ")))
+  }
+  if (anyDuplicated(method) > 0L) {
+    stop("'method' must not contain duplicates")
   }
   if (length(ties) != 1L || !ties %in% c("efron", "breslow")) {
     stop("'ties' must be \"efron\" or \"breslow\"")
@@ -156,6 +230,7 @@ EstHR <- function(time, event, group, control, method,
   if (!is.numeric(tol) || length(tol) != 1L || !(tol > 0)) {
     stop("'tol' must be a single positive number")
   }
+
   trt <- check_inputs(time, event, group, control, strata)
 
   # Output in the form of summary.coxph(): coef, exp(coef), se(coef), limits
@@ -163,64 +238,32 @@ EstHR <- function(time, event, group, control, method,
   out_names <- c("coef", "exp(coef)", "se(coef)",
                  paste0("lower .", round(100 * conf.level, 2)),
                  paste0("upper .", round(100 * conf.level, 2)))
-  na_out <- stats::setNames(rep(NA_real_, 5L), out_names)
-  make_out <- function(b, se) {
-    if (!is.finite(b)) return(na_out)
-    if (!is.finite(se)) se <- NA_real_
-    stats::setNames(c(b, exp(b), se, exp(b - z * se), exp(b + z * se)),
-                    out_names)
+  est <- estimate_hr(time, event, trt, strata, method, ties, is_sorted, tol)
+  b <- est[, "coef"]
+  b[!is.finite(b)] <- NA_real_
+  se <- est[, "se"]
+  se[is.na(b) | !is.finite(se)] <- NA_real_
+  out <- cbind(b, exp(b), se, exp(b - z * se), exp(b + z * se))
+  dimnames(out) <- list(method, out_names)
+
+  if (length(method) == 1L) {
+    out <- out[1L, ]
+    class(out) <- c("EstHR", "numeric")
+  } else {
+    class(out) <- c("EstHR", "matrix", "array")
   }
-
-  if (length(time) == 0L || sum(event) == 0) return(na_out)
-
-  # Cox by survival::coxph()
-  if (method == "Cox") {
-    x <- as.numeric(trt)
-    ctrl <- survival::coxph.control(
-      eps = tol,
-      toler.chol = min(.Machine$double.eps^0.875, tol / 10),
-      iter.max = 100L,
-      timefix = FALSE
-    )
-    if (is.null(strata)) {
-      fit <- survival::coxph(Surv(time, event) ~ x, ties = ties,
-                             control = ctrl)
-    } else {
-      s <- strata
-      fit <- survival::coxph(Surv(time, event) ~ x + strata(s), ties = ties,
-                             control = ctrl)
-    }
-    return(make_out(unname(fit$coefficients[1L]),
-                    sqrt(unname(fit$var[1L, 1L]))))
-  }
-
-  # All other methods share the risk-set summaries
-  rs <- risk_sets(time, event, trt, strata, is_sorted)
-  O_T <- sum(rs$O_T)
-  if (O_T == 0 || O_T == sum(rs$O)) return(na_out)
-
-  if (method %in% c("MH", "Pike", "Peto")) {
-    a <- anchor_estimate(rs, method)
-    return(make_out(a[["eta"]], a[["se"]]))
-  }
-
-  anchor <- if (startsWith(method, "Pike")) "Pike" else "MH"
-  a <- anchor_estimate(rs, anchor)
-  if (!is.finite(a[["eta"]])) return(na_out)
-  dt <- deriv_table(rs, ties)
-
-  if (method == "Cox_NR") {
-    fit <- newton_cox(a[["eta"]], dt, tol)
-    if (!fit$converged) {
-      warning("Newton-Raphson iteration of 'Cox_NR' did not converge; ",
-              "NA is returned")
-      return(na_out)
-    }
-    return(make_out(fit$eta, 1 / sqrt(fit$info)))
-  }
-
-  d0 <- score_derivs(a[["eta"]], dt)
-  if (!isTRUE(d0[["I"]] > 0)) return(na_out)
-  st <- one_step(a[["eta"]], d0, sub("^.*_", "", method))
-  make_out(st[["eta"]], st[["se"]])
+  n_T <- sum(trt)
+  e_T <- sum(event[trt])
+  attr(out, "method") <- method
+  attr(out, "ties") <- ties
+  attr(out, "conf.level") <- conf.level
+  attr(out, "groups") <- c(
+    treatment = if (n_T > 0) as.character(group[match(TRUE, trt)]) else NA,
+    control = as.character(control)
+  )
+  attr(out, "n") <- c(treatment = n_T, control = length(trt) - n_T)
+  attr(out, "events") <- c(treatment = e_T, control = sum(event) - e_T)
+  attr(out, "n_strata") <- if (is.null(strata)) 1L else length(unique(strata))
+  attr(out, "n_removed") <- n_removed
+  out
 }

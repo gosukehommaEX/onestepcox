@@ -9,7 +9,10 @@
 #'
 #' Subjects censored at an event time are counted as at risk at that time, as
 #' in \code{survival::coxph()}. Times are tied only when they are exactly
-#' equal.
+#' equal. The data are given as vectors or by a formula
+#' \code{Surv(time, event) ~ group + strata(s)}, as in \code{\link{EstHR}}
+#' (see Formula interface in its Details); rows with missing values are then
+#' removed.
 #'
 #' @inheritParams EstHR
 #'
@@ -35,9 +38,26 @@
 #' RiskTable(time, event, group, control = "C",
 #'           strata = rep(c("a", "b"), each = 5))
 #'
+#' # Formula interface
+#' head(RiskTable(Surv(rfstime, status) ~ hormon + strata(grade),
+#'                data = survival::gbsg))
+#'
 #' @export
 RiskTable <- function(time, event, group, control, strata = NULL,
-                      is_sorted = FALSE) {
+                      is_sorted = FALSE, data = NULL) {
+  if (inherits(time, "formula")) {
+    f <- parse_formula(time, data,
+                       event = if (missing(event)) NULL else event,
+                       group = if (missing(group)) NULL else group,
+                       strata = strata)
+    time <- f$time
+    event <- f$event
+    group <- f$group
+    strata <- f$strata
+    if (missing(control)) control <- f$control
+  } else if (!is.null(data)) {
+    stop("'data' is used only with a formula")
+  }
   trt <- check_inputs(time, event, group, control, strata)
   rs <- risk_sets(time, event, trt, strata, is_sorted)
   out <- data.frame(time = rs$time, n_T = rs$n_T, n_C = rs$n_C,

@@ -4,28 +4,47 @@
 \alias{RiskTable}
 \title{Risk-set summaries at the distinct event times}
 \usage{
-RiskTable(time, event, group, control, strata = NULL, is_sorted = FALSE)
+RiskTable(
+  time,
+  event,
+  group,
+  control,
+  strata = NULL,
+  is_sorted = FALSE,
+  data = NULL
+)
 }
 \arguments{
-\item{time}{Numeric vector of follow-up times.}
+\item{time}{Numeric vector of follow-up times, or a formula
+\code{Surv(time, event) ~ group}, optionally with \code{+ strata(s)}
+(see Formula interface in Details).}
 
 \item{event}{Vector of event indicators, 1 (event) or 0 (censored), or
-logical, aligned with \code{time}.}
+logical, aligned with \code{time}. With a formula, the data frame may be
+given here instead of in \code{data}, as in \code{coxph(formula, data)}.}
 
 \item{group}{Vector of group labels aligned with \code{time}. Subjects with
-\code{group != control} form the treatment group.}
+\code{group != control} form the treatment group. Not used with a
+formula.}
 
 \item{control}{Single value of \code{group} that identifies the control
-group.}
+group. With a formula, the default is the first level of the group
+variable if it is a factor and its smallest value otherwise, which is
+the reference level of \code{coxph()}.}
 
 \item{strata}{Optional vector of stratum labels aligned with \code{time}.
 Each stratum has its own baseline hazard and the HR is common to all
-strata. Default \code{NULL} (no stratification).}
+strata. Default \code{NULL} (no stratification). With a formula, strata
+are given by \code{strata()} in the formula instead.}
 
 \item{is_sorted}{Logical. If \code{TRUE}, the rows are taken to be sorted
 in ascending order of \code{time} within strata, with the rows of each
 stratum contiguous, and the internal sorting is skipped. An error is
 raised if they are not. Default \code{FALSE}.}
+
+\item{data}{A data frame (or list) in which the variables of a formula are
+evaluated. Used only with a formula. Default \code{NULL} (the
+environment of the formula).}
 }
 \value{
 A data frame with one row per distinct event time within stratum,
@@ -51,7 +70,10 @@ same internal code.
 \details{
 Subjects censored at an event time are counted as at risk at that time, as
 in \code{survival::coxph()}. Times are tied only when they are exactly
-equal.
+equal. The data are given as vectors or by a formula
+\code{Surv(time, event) ~ group + strata(s)}, as in \code{\link{EstHR}}
+(see Formula interface in its Details); rows with missing values are then
+removed.
 }
 \examples{
 time  <- c(1, 1, 2, 2, 3, 3, 4, 5, 5, 6)
@@ -60,6 +82,10 @@ group <- c("C", "T", "C", "T", "C", "T", "T", "C", "C", "T")
 RiskTable(time, event, group, control = "C")
 RiskTable(time, event, group, control = "C",
           strata = rep(c("a", "b"), each = 5))
+
+# Formula interface
+head(RiskTable(Surv(rfstime, status) ~ hormon + strata(grade),
+               data = survival::gbsg))
 
 }
 \seealso{

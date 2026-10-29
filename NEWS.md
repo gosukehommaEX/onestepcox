@@ -10,6 +10,11 @@
   `survival::coxph()` (`"Cox"`) or by Newton-Raphson iteration on the same
   risk-set summaries (`"Cox_NR"`). Tied event times are handled by the Efron
   (default) or the Breslow method, and stratification is supported.
+* `EstHR()` and `RiskTable()` accept a formula
+  `Surv(time, event) ~ group + strata(s)` with a data frame, as in
+  `survival::coxph()`, as well as vectors. `EstHR()` takes several methods at
+  once and returns an object of class `"EstHR"` with `print()` and `plot()`
+  methods.
 * `RiskTable()` returns the risk-set summaries shared by the estimators.
 * `GenSimData()`, carried over from the package accompanying an earlier
   version of the article, generates stratified data (`strata_prop`,
@@ -22,6 +27,9 @@
   rounded times.
 * `LimitHR()` computes the large-sample limits of the estimators under the
   design of `GenSimData()`.
+* The results of `CompareOC()` and `LimitHR()` have classes `"CompareOC"`
+  and `"LimitHR"` with `print()` and `plot()` methods. The `plot()` methods
+  take colours, line types, symbols, text size, and legend position.
 * `inst/reproduce/` reproduces Figure 1 of Berry, Kitchin and Mock (1991) and
   test data 1 of Therneau and Grambsch (2000); `inst/validation/` compares the
   estimators with an independent Python implementation and `LimitHR()` with
