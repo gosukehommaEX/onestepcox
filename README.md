@@ -69,13 +69,21 @@ lim <- LimitHR(HR = c(0.5, 2, 10), hazard_C = log(2) / 18,
 lim[lim$method %in% c("Pike", "Pike_Halley", "MH_Halley"), ]
 ```
 
-## Tests
+## Tests, reproduction, and validation
 
 The tests compare the closed-form estimators, the score derivatives, the
 risk-set summaries, and the large-sample limits with values computed
 beforehand by an independent Python implementation (`tools/test_expected/`,
 not part of the package build), and compare `"Cox"` and `"Cox_NR"` with
 `survival::coxph()`.
+
+`inst/reproduce/` reproduces published results: Figure 1 of Berry, Kitchin
+and Mock (1991) (Peto and Pike estimates in simulated trials) and the
+closed-form results for test data 1 of Therneau and Grambsch (2000).
+`inst/validation/` compares all estimators with an independent Python
+implementation on 203 datasets and `LimitHR()` with simulations of 100,000
+subjects. Each script writes its checks to a `results/` folder, and
+`inst/validation/summarize_validation.R` counts them.
 
 ## License
 

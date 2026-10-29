@@ -22,3 +22,7 @@
   rounded times.
 * `LimitHR()` computes the large-sample limits of the estimators under the
   design of `GenSimData()`.
+* `inst/reproduce/` reproduces Figure 1 of Berry, Kitchin and Mock (1991) and
+  test data 1 of Therneau and Grambsch (2000); `inst/validation/` compares the
+  estimators with an independent Python implementation and `LimitHR()` with
+  large-sample simulations.
