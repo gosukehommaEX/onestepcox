@@ -32,7 +32,11 @@ print.LimitHR <- function(x, digits = 3L, ...) {
   }
   hr <- sort(unique(x$HR))
   methods <- unique(x$method)
-  hr_lab <- paste("HR =", formatC(hr, digits = digits, format = "fg"))
+  # formatC() pads its result with blanks, which trimws() removes
+  fmt <- function(v, format) {
+    trimws(formatC(v, digits = digits, format = format))
+  }
+  hr_lab <- paste("HR =", fmt(hr, "fg"))
   bias <- matrix(NA_real_, nrow = length(methods), ncol = length(hr),
                  dimnames = list(methods, hr_lab))
   for (i in seq_along(methods)) {
@@ -44,16 +48,17 @@ print.LimitHR <- function(x, digits = 3L, ...) {
   cat("Large-sample limits of the log hazard ratio estimators\n")
   design <- attr(x, "design")
   if (!is.null(design)) {
-    f <- function(v) formatC(v, digits = digits, format = "fg")
+    f <- function(v) fmt(v, "fg")
     cat("Design: hazard_C = ", f(design[["hazard_C"]]), ", n_T : n_C = ",
         f(design[["n_T"]]), " : ", f(design[["n_C"]]), ", a = ",
         f(design[["a"]]), ", E = ", f(design[["E"]]), ", dropout hazard = ",
         f(design[["dropout_hazard"]]), "\n", sep = "")
   }
   cat("\nAnalysis time:\n")
-  print(noquote(stats::setNames(
-    formatC(tau, digits = digits, format = "g"), hr_lab)), right = TRUE)
+  print(noquote(stats::setNames(fmt(tau, "g"), hr_lab)), right = TRUE)
   cat("\nBias (limit - log HR):\n")
-  print(noquote(formatC(bias, digits = digits, format = "g")), right = TRUE)
+  bias_txt <- bias
+  bias_txt[] <- fmt(bias, "g")
+  print(noquote(bias_txt), right = TRUE)
   invisible(x)
 }

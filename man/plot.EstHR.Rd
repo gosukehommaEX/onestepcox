@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{EstHR}(
   x,
+  labels = NULL,
   col = NULL,
   pch = 15,
   cex = 1.2,
@@ -28,6 +29,10 @@
 }
 \arguments{
 \item{x}{An object of class \code{"EstHR"} returned by \code{EstHR()}.}
+
+\item{labels}{Labels of the methods on the vertical axis and in the
+legend, one per method. Default \code{NULL}: the names of the methods
+with underscores replaced by hyphens, such as \code{"MH-Halley"}.}
 
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
@@ -75,7 +80,8 @@ such as \code{las} or \code{family}.}
 }
 \value{
 A data frame of the plotted values, with the columns
-  \code{method}, \code{HR}, \code{lower}, \code{upper}, and \code{y} (the
+  \code{method}, \code{label}, \code{HR}, \code{lower}, \code{upper},
+  \code{text} (the values written in the right margin), and \code{y} (the
   vertical position), invisibly. The graphical parameters are restored on
   exit.
 }

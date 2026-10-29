@@ -60,10 +60,12 @@ head(RiskTable(Surv(rfstime, status) ~ hormon, data = survival::gbsg))
 ```
 
 The `plot()` methods of `EstHR()`, `CompareOC()`, and `LimitHR()` results
-take the colours (`col`), line types and widths (`lty`, `lwd`), symbols
-(`pch`, `cex`), the size of the text (`base_size`), and the position of the
-legend (`legend_pos`, a keyword such as `"topright"`, coordinates, or
-`"none"`), and restore the graphical parameters on exit.
+take the labels of the methods (`labels`; by default the method names with
+hyphens, such as `MH-Halley`), the colours (`col`), line types and widths
+(`lty`, `lwd`), symbols (`pch`, `cex`), the size of the text (`base_size`),
+and the position of the legend (`legend_pos`, a keyword such as
+`"topright"`, coordinates, or `"none"`), and restore the graphical
+parameters on exit.
 
 ## Simulation and large-sample limits
 

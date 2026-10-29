@@ -14,6 +14,9 @@ test_that("plot() draws silently and returns the plotted values invisibly", {
     expect_equal(v$HR, unname(est[, "exp(coef)"]))
     expect_equal(v$lower, unname(est[, "lower .95"]))
     expect_equal(v$y, 5:1)
+    # Default labels with hyphens, and the values without padding
+    expect_identical(v$label, c("MH-Halley", "MH", "Pike", "Peto", "Cox"))
+    expect_true(all(grepl("^[0-9.]+ \\([0-9.]+, [0-9.]+\\)$", v$text)))
     expect_false(withVisible(plot(est))$visible)
   })
 })
@@ -32,6 +35,8 @@ test_that("plot() accepts the graphical options", {
     expect_silent(plot(est, legend_pos = c(0.5, 4)))
     expect_silent(plot(est, mar = c(4, 8, 2, 2), ref_col = "red", las = 1))
     expect_silent(plot(single))
+    expect_silent(v <- plot(est, labels = c("A", "B", "C", "D", "E")))
+    expect_identical(v$label, c("A", "B", "C", "D", "E"))
     # One Cox estimate, which is also the reference line
     cox <- EstHR(Surv(rfstime, status) ~ hormon, data = survival::gbsg,
                  method = "Cox")
@@ -55,5 +60,6 @@ test_that("Invalid input gives informative errors", {
   on_null_device({
     expect_error(plot(na_est), "no estimate")
     expect_error(plot(est_for_plot(), legend_pos = "middle"), "legend_pos")
+    expect_error(plot(est_for_plot(), labels = c("A", "B")), "labels")
   })
 })

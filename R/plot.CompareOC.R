@@ -17,6 +17,9 @@
 #' @param methods Methods to plot, in the order of the legend. Default
 #'   \code{NULL}: all methods, except the reference for \code{"deviation"}
 #'   and \code{"se_ratio"}.
+#' @param labels Labels of the methods in the legend, one per method of
+#'   \code{methods}. Default \code{NULL}: the names of the methods with
+#'   underscores replaced by hyphens, such as \code{"MH-Halley"}.
 #' @param col Colours of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
 #' @param lty,lwd,pch,cex Line type, line width, plotting symbol, and symbol
@@ -65,7 +68,8 @@
 #' @export
 plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
                                        "coverage", "se_ratio", "time"),
-                           methods = NULL, col = NULL, lty = 1, lwd = 2,
+                           methods = NULL, labels = NULL, col = NULL,
+                           lty = 1, lwd = 2,
                            pch = 19, cex = 1, base_size = 1,
                            legend_pos = "topright", legend_inset = 0.02,
                            legend_ncol = 1L, xlab = "Scenario", ylab = NULL,
@@ -78,7 +82,7 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
   }
   ref <- attr(x, "reference")
   if (is.null(ref)) ref <- s$method[1L]
-  labels <- unique(as.character(s$label))
+  scen <- unique(as.character(s$label))
   all_methods <- unique(s$method)
   if (is.null(methods)) {
     methods <- if (what %in% c("deviation", "se_ratio")) {
@@ -93,7 +97,8 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
          paste(all_methods, collapse = ", "))
   }
   k <- length(methods)
-  n_lab <- length(labels)
+  n_lab <- length(scen)
+  legend_labels <- plot_labels(methods, labels)
   col <- plot_colors(k, col)
   lty <- rep_len(lty, k)
   lwd <- rep_len(lwd, k)
@@ -106,7 +111,7 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
   if (what == "deviation") {
     # Deviation of each replicate from the reference, matched by simID
     vals <- list()
-    for (lab in labels) {
+    for (lab in scen) {
       e <- est[as.character(est$label) == lab, , drop = FALSE]
       r <- e[e$method == ref, , drop = FALSE]
       for (m in methods) {
@@ -133,8 +138,8 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
                       ylim = ylim, xlab = xlab, ylab = ylab, main = main,
                       names = rep("", length(at)), ...)
     graphics::axis(1, at = (seq_len(n_lab) - 1L) * (k + 1L) + (k + 1) / 2,
-                   labels = labels, tick = FALSE)
-    draw_legend(legend_pos, methods, inset = legend_inset,
+                   labels = scen, tick = FALSE)
+    draw_legend(legend_pos, legend_labels, inset = legend_inset,
                 ncol = legend_ncol, cex = base_size, fill = fill,
                 border = col)
     return(invisible(vals))
@@ -143,10 +148,10 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
   column <- c(bias = "bias", rmse = "rmse", coverage = "coverage",
               se_ratio = "se_ratio_median", time = "time_per_sim")[[what]]
   mat <- matrix(NA_real_, nrow = n_lab, ncol = k,
-                dimnames = list(labels, methods))
+                dimnames = list(scen, methods))
   for (j in seq_len(k)) {
     sm <- s[s$method == methods[j], , drop = FALSE]
-    mat[, j] <- sm[[column]][match(labels, as.character(sm$label))]
+    mat[, j] <- sm[[column]][match(scen, as.character(sm$label))]
   }
   if (!any(is.finite(mat))) stop("there is no value to plot")
   target <- switch(what, bias = 0, coverage = attr(x, "conf.level"),
@@ -168,7 +173,7 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
   graphics::plot(NA, xlim = c(0.75, n_lab + 0.25), ylim = ylim,
                  log = if (log_y) "y" else "", xaxt = "n", xlab = xlab,
                  ylab = ylab, main = main, ...)
-  graphics::axis(1, at = seq_len(n_lab), labels = labels)
+  graphics::axis(1, at = seq_len(n_lab), labels = scen)
   for (j in seq_len(k)) {
     graphics::lines(seq_len(n_lab), mat[, j], type = "b", col = col[j],
                     lty = lty[j], lwd = lwd[j], pch = pch[j], cex = cex)
@@ -176,7 +181,8 @@ plot.CompareOC <- function(x, what = c("deviation", "bias", "rmse",
   if (!is.null(target)) {
     graphics::abline(h = target, col = "grey50", lty = 2)
   }
-  draw_legend(legend_pos, methods, inset = legend_inset, ncol = legend_ncol,
+  draw_legend(legend_pos, legend_labels, inset = legend_inset,
+              ncol = legend_ncol,
               cex = base_size, col = col, lty = lty, lwd = lwd, pch = pch)
   invisible(mat)
 }

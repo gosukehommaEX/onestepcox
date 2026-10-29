@@ -26,6 +26,8 @@ test_that("plot() accepts the graphical options", {
                        lwd = 1, pch = 2, cex = 1, base_size = 0.8,
                        legend_pos = "none", main = "Peto", xlab = "HR",
                        ylab = "bias"))
+    expect_silent(plot(lim, methods = c("Pike", "Pike_Halley"),
+                       labels = c("Pike", "Pike, Halley step")))
     expect_silent(plot(lim, legend_pos = "bottomright", legend_ncol = 2,
                        xlim = c(0.2, 5), ylim = c(1e-10, 1)))
     expect_silent(plot(lim, scale = "signed", legend_pos = c(0.3, 0),
@@ -48,5 +50,6 @@ test_that("Invalid input gives informative errors", {
     expect_error(plot(lim, methods = "PiHE"), "methods")
     expect_error(plot(lim, scale = "log"), "should be one of")
     expect_error(plot(lim, legend_pos = 3), "legend_pos")
+    expect_error(plot(lim, labels = "Pike"), "labels")
   })
 })

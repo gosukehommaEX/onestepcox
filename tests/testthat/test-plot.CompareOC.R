@@ -39,6 +39,7 @@ test_that("plot() accepts the graphical options", {
     expect_silent(plot(res, what = "coverage", methods = "Cox", lty = 2,
                        lwd = 1, pch = 1, cex = 1.5, legend_pos = "none",
                        ylim = c(0, 1)))
+    expect_silent(plot(res, labels = c("Pike anchor", "Proposed")))
     expect_silent(plot(res, what = "rmse", legend_pos = c(1, 0.5),
                        legend_ncol = 3, xlab = "", ylab = "RMSE", las = 1))
   })
@@ -59,5 +60,6 @@ test_that("Invalid input gives informative errors", {
     expect_error(plot(res, methods = "Peto"), "methods")
     expect_error(plot(res, what = "power"), "should be one of")
     expect_error(plot(res, legend_pos = "middle"), "legend_pos")
+    expect_error(plot(res, labels = "Pike"), "labels")
   })
 })

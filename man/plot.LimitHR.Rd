@@ -8,6 +8,7 @@
   x,
   methods = c("Pike", "Peto", "Pike_Newton", "Pike_Chebyshev", "Pike_Halley"),
   scale = c("abs", "signed"),
+  labels = NULL,
   col = NULL,
   lty = 1,
   lwd = 2,
@@ -38,6 +39,10 @@ methods whose limit differs from the true value, \code{"Pike"},
 \item{scale}{\code{"abs"} (default) for the absolute bias on a
 logarithmic vertical axis, or \code{"signed"} for the bias on a linear
 axis with a dashed line at 0.}
+
+\item{labels}{Labels of the methods in the legend, one per method of
+\code{methods}. Default \code{NULL}: the names of the methods with
+underscores replaced by hyphens, such as \code{"Pike-Halley"}.}
 
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}

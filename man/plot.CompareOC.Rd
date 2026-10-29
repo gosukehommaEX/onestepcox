@@ -8,6 +8,7 @@
   x,
   what = c("deviation", "bias", "rmse", "coverage", "se_ratio", "time"),
   methods = NULL,
+  labels = NULL,
   col = NULL,
   lty = 1,
   lwd = 2,
@@ -35,6 +36,10 @@
 \item{methods}{Methods to plot, in the order of the legend. Default
 \code{NULL}: all methods, except the reference for \code{"deviation"}
 and \code{"se_ratio"}.}
+
+\item{labels}{Labels of the methods in the legend, one per method of
+\code{methods}. Default \code{NULL}: the names of the methods with
+underscores replaced by hyphens, such as \code{"MH-Halley"}.}
 
 \item{col}{Colours of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}

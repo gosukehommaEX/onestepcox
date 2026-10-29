@@ -7,7 +7,11 @@ test_that("print() shows the design, the analysis times, and the bias", {
   expect_identical(v$value, lim)
   txt <- paste(out, collapse = "\n")
   expect_match(txt, "n_T : n_C = 100 : 100, a = 12, E = 160", fixed = TRUE)
+  # The numbers are not padded with blanks
+  expect_match(txt, "dropout hazard = 0\n", fixed = TRUE)
   expect_match(txt, "HR = 0.25", fixed = TRUE)
+  expect_match(txt, "HR = 0.5", fixed = TRUE)
+  expect_match(txt, "HR = 1", fixed = TRUE)
   expect_match(txt, "Analysis time:", fixed = TRUE)
   expect_match(txt, "Bias (limit - log HR):", fixed = TRUE)
   expect_equal(sum(grepl("^Pike_Chebyshev ", out)), 1)

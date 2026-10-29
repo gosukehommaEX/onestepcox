@@ -8,6 +8,9 @@
 #' interval of each method are written in the right margin.
 #'
 #' @param x An object of class \code{"EstHR"} returned by \code{EstHR()}.
+#' @param labels Labels of the methods on the vertical axis and in the
+#'   legend, one per method. Default \code{NULL}: the names of the methods
+#'   with underscores replaced by hyphens, such as \code{"MH-Halley"}.
 #' @param col Colours of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
 #' @param pch,cex Plotting symbol and its size for the hazard ratios.
@@ -39,7 +42,8 @@
 #'   such as \code{las} or \code{family}.
 #'
 #' @return A data frame of the plotted values, with the columns
-#'   \code{method}, \code{HR}, \code{lower}, \code{upper}, and \code{y} (the
+#'   \code{method}, \code{label}, \code{HR}, \code{lower}, \code{upper},
+#'   \code{text} (the values written in the right margin), and \code{y} (the
 #'   vertical position), invisibly. The graphical parameters are restored on
 #'   exit.
 #'
@@ -55,12 +59,13 @@
 #' plot(est, legend_pos = "topright", xlim = c(0.5, 1))
 #'
 #' @export
-plot.EstHR <- function(x, col = NULL, pch = 15, cex = 1.2, lwd = 2, lty = 1,
-                       base_size = 1, show_values = TRUE, value_digits = 3L,
-                       ref_lines = TRUE, ref_col = "grey50",
-                       legend_pos = "none", legend_inset = 0.02,
-                       legend_ncol = 1L, xlab = "Hazard ratio", main = NULL,
-                       xlim = NULL, mar = NULL, ...) {
+plot.EstHR <- function(x, labels = NULL, col = NULL, pch = 15, cex = 1.2,
+                       lwd = 2, lty = 1, base_size = 1, show_values = TRUE,
+                       value_digits = 3L, ref_lines = TRUE,
+                       ref_col = "grey50", legend_pos = "none",
+                       legend_inset = 0.02, legend_ncol = 1L,
+                       xlab = "Hazard ratio", main = NULL, xlim = NULL,
+                       mar = NULL, ...) {
   method <- attr(x, "method")
   if (is.null(method) || length(x) != 5L * length(method)) {
     stop("'x' must be the output of EstHR()")
@@ -76,6 +81,7 @@ plot.EstHR <- function(x, col = NULL, pch = 15, cex = 1.2, lwd = 2, lty = 1,
   ok <- is.finite(hr)
   if (!any(ok)) stop("there is no estimate to plot")
   y <- rev(seq_len(k))
+  labels <- plot_labels(method, labels)
   col <- plot_colors(k, col)
   pch <- rep_len(pch, k)
   lwd <- rep_len(lwd, k)
@@ -90,17 +96,15 @@ plot.EstHR <- function(x, col = NULL, pch = 15, cex = 1.2, lwd = 2, lty = 1,
     pad <- 0.04 * diff(log(xlim))
     xlim <- exp(log(xlim) + c(-pad, pad))
   }
-  values <- ifelse(ok,
-                   paste0(formatC(hr, digits = value_digits, format = "fg",
-                                  flag = "#"),
-                          " (", formatC(lower, digits = value_digits,
-                                        format = "fg", flag = "#"),
-                          ", ", formatC(upper, digits = value_digits,
-                                        format = "fg", flag = "#"), ")"),
-                   "NA")
+  # formatC() pads its result with blanks, which trimws() removes
+  fmt <- function(v) {
+    trimws(formatC(v, digits = value_digits, format = "fg", flag = "#"))
+  }
+  values <- ifelse(ok, paste0(fmt(hr), " (", fmt(lower), ", ", fmt(upper),
+                              ")"), "NA")
   if (is.null(mar)) {
     # About 0.45 lines per character of the labels at cex = 1
-    left <- 0.45 * base_size * max(nchar(method)) + 1.5
+    left <- 0.45 * base_size * max(nchar(labels)) + 1.5
     right <- if (show_values) {
       0.45 * base_size * max(nchar(values)) + 1.5
     } else {
@@ -128,16 +132,17 @@ plot.EstHR <- function(x, col = NULL, pch = 15, cex = 1.2, lwd = 2, lty = 1,
                        lwd = lwd[ci], lty = lty[ci])
   }
   graphics::points(hr[ok], y[ok], pch = pch[ok], col = col[ok], cex = cex)
-  graphics::axis(2, at = y, labels = method, las = 1, tick = FALSE,
+  graphics::axis(2, at = y, labels = labels, las = 1, tick = FALSE,
                  cex.axis = base_size)
   if (show_values) {
     graphics::axis(4, at = y, labels = values, las = 1, tick = FALSE,
                    cex.axis = base_size)
   }
-  draw_legend(legend_pos, method, inset = legend_inset, ncol = legend_ncol,
+  draw_legend(legend_pos, labels, inset = legend_inset, ncol = legend_ncol,
               cex = base_size, col = col, pch = pch, lty = lty, lwd = lwd)
 
-  invisible(data.frame(method = method, HR = unname(hr),
-                       lower = unname(lower), upper = unname(upper), y = y,
+  invisible(data.frame(method = method, label = labels, HR = unname(hr),
+                       lower = unname(lower), upper = unname(upper),
+                       text = unname(values), y = y,
                        stringsAsFactors = FALSE))
 }

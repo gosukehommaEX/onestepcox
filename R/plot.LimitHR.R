@@ -13,6 +13,9 @@
 #' @param scale \code{"abs"} (default) for the absolute bias on a
 #'   logarithmic vertical axis, or \code{"signed"} for the bias on a linear
 #'   axis with a dashed line at 0.
+#' @param labels Labels of the methods in the legend, one per method of
+#'   \code{methods}. Default \code{NULL}: the names of the methods with
+#'   underscores replaced by hyphens, such as \code{"Pike-Halley"}.
 #' @param col Colours of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
 #' @param lty,lwd,pch,cex Line type, line width, plotting symbol, and symbol
@@ -53,10 +56,11 @@
 #' @export
 plot.LimitHR <- function(x, methods = c("Pike", "Peto", "Pike_Newton",
                                         "Pike_Chebyshev", "Pike_Halley"),
-                         scale = c("abs", "signed"), col = NULL, lty = 1,
-                         lwd = 2, pch = 19, cex = 0.8, base_size = 1,
-                         legend_pos = "top", legend_inset = 0.02,
-                         legend_ncol = 1L, xlab = "Hazard ratio",
+                         scale = c("abs", "signed"), labels = NULL,
+                         col = NULL, lty = 1, lwd = 2, pch = 19, cex = 0.8,
+                         base_size = 1, legend_pos = "top",
+                         legend_inset = 0.02, legend_ncol = 1L,
+                         xlab = "Hazard ratio",
                          ylab = NULL, main = NULL, xlim = NULL, ylim = NULL,
                          floor = 1e-16, ...) {
   scale <- match.arg(scale)
@@ -76,6 +80,7 @@ plot.LimitHR <- function(x, methods = c("Pike", "Peto", "Pike_Newton",
     mat[, j] <- x$bias[sel][match(hr, x$HR[sel])]
   }
   if (!any(is.finite(mat))) stop("there is no value to plot")
+  labels <- plot_labels(methods, labels)
   col <- plot_colors(k, col)
   lty <- rep_len(lty, k)
   lwd <- rep_len(lwd, k)
@@ -113,7 +118,7 @@ plot.LimitHR <- function(x, methods = c("Pike", "Peto", "Pike_Newton",
     graphics::lines(hr, y[, j], type = "b", col = col[j], lty = lty[j],
                     lwd = lwd[j], pch = pch[j], cex = cex)
   }
-  draw_legend(legend_pos, methods, inset = legend_inset, ncol = legend_ncol,
+  draw_legend(legend_pos, labels, inset = legend_inset, ncol = legend_ncol,
               cex = base_size, col = col, lty = lty, lwd = lwd, pch = pch)
   invisible(mat)
 }
