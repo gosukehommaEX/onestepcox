@@ -39,7 +39,9 @@
 # Run from the root of the package, in a fresh R session, after the data
 # scripts, and again after any change of the results, the settings, or the
 # ledger:
+#   devtools::load_all()
 #   source("inst/scripts/number_check.R")
+# (settings.R calls library(onestepcox) unless the package is loaded.)
 # The result is written to inst/scripts/results/number_check.csv, with the
 # MD5 of each source file (of settings.R for an input without a source file),
 # so that check_numbers.py can tell whether the results or the settings

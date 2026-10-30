@@ -160,9 +160,11 @@ no trailing zeros (0.10 needs `fixed:2`). A negative number is written
 `$-0.012$`, and thousands are separated by `,` or `{,}` (not `\,`).
 
 After any change of the results, of `settings.R`, of the ledger, or of the
-text, run, from the root of the package in a fresh R session,
+text, run, from the root of the package in a fresh R session (in RStudio,
+Session > Restart R),
 
 ```r
+devtools::load_all()
 source("inst/scripts/number_check.R")
 source("inst/scripts/copy_results.R")
 ```

@@ -1,0 +1,24 @@
+template:
+  bootstrap: 5
+
+reference:
+- title: Estimation
+  contents:
+  - EstHR
+  - RiskTable
+- title: Simulation and large-sample limits
+  contents:
+  - GenSimData
+  - CompareOC
+  - LimitHR
+- title: Printing and plotting
+  contents:
+  - print.EstHR
+  - plot.EstHR
+  - print.CompareOC
+  - plot.CompareOC
+  - print.LimitHR
+  - plot.LimitHR
+- title: Package
+  contents:
+  - onestepcox-package

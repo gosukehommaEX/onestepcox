@@ -15,6 +15,11 @@ times and stratification are supported. The package is written in R only.
 remotes::install_github("gosukehommaEX/onestepcox")
 ```
 
+The vignette walks through the estimators, the simulations, and the
+large-sample limits. To build it, install with
+`remotes::install_github("gosukehommaEX/onestepcox", build_vignettes = TRUE)`
+and see `vignette("onestepcox")`.
+
 ## Methods of `EstHR()`
 
 | `method` | Estimator of the log hazard ratio |
