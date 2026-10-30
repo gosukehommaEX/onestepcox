@@ -1,0 +1,167 @@
+---
+title: "Large-sample limits and the choice of anchor"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Large-sample limits and the choice of anchor}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
+                      fig.width = 6, fig.height = 3.5, out.width = "100%")
+# A number written for the text: plain for moderate sizes, and as
+# m x 10^e (HTML) otherwise
+fmt_num <- function(x, digits = 2) {
+  x <- signif(x, digits)
+  if (!is.finite(x)) return(as.character(x))
+  if (abs(x) < 1e-300) return("0")
+  e <- floor(log10(abs(x)))
+  if (e >= -3 && e <= 4) return(format(x, digits = digits, big.mark = ","))
+  sprintf("%s &times; 10<sup>%d</sup>", format(x / 10^e, digits = digits),
+          as.integer(e))
+}
+```
+
+```{r setup}
+library(onestepcox)
+library(ggplot2)
+```
+
+A one-step correction converges to the Cox limit only if its anchor does.
+Under proportional hazards, the Mantel-Haenszel estimator converges to the
+true log hazard ratio, whereas the Pike and Peto estimators converge to other
+values unless the hazard ratio is 1. `LimitHR()` computes these limits under
+the design of `GenSimData()`; this article uses it to show how large the
+differences are and how they carry over to the one-step corrections.
+
+## Limits over a range of hazard ratios
+
+The design below has equal groups, uniform accrual over a period of length
+`a`, and the analysis when a fraction `E / (n_T + n_C)` of the subjects have
+had an event. The limits depend on the allocation, the hazards, `a`, and this
+fraction, not on the sample size itself.
+
+```{r grid}
+design <- list(hazard_C = log(2) / 18, n_T = 100, n_C = 100, a = 12,
+               E = 150)
+hr <- exp(seq(log(0.1), log(10), length.out = 20))
+lim <- do.call(LimitHR, c(list(HR = hr), design))
+```
+
+The first figure shows the absolute bias of the estimators whose limits
+differ from the true value: the Pike and Peto estimators and the corrections
+from the Pike anchor.
+
+```{r figure-abs, fig.alt = "Absolute large-sample bias of the Pike and Peto estimators and of the Newton, Chebyshev, and Halley steps from the Pike estimate against the hazard ratio, on logarithmic scales."}
+plot(lim)
+```
+
+The second figure shows the signed bias of the anchors and of the Halley
+steps from each anchor. The Mantel-Haenszel anchor and the MH-Halley
+estimator stay on the line at zero.
+
+```{r figure-signed, fig.alt = "Signed large-sample bias of the Mantel-Haenszel, Pike, and Peto estimators and of the Halley steps from the Mantel-Haenszel and Pike estimates against the hazard ratio."}
+plot(lim, methods = c("MH", "MH_Halley", "Pike", "Pike_Halley", "Peto"),
+     scale = "signed")
+```
+
+## The bias at selected hazard ratios
+
+```{r table}
+hr_tab <- c(0.2, 0.5, 2, 5, 10)
+lim_tab <- as.data.frame(do.call(LimitHR, c(list(HR = hr_tab), design)))
+shown <- c("Pike", "Peto", "Pike_Newton", "Pike_Halley", "MH", "MH_Halley")
+tiny <- 1e-12
+fmt_bias <- function(x) if (abs(x) < tiny) "0" else fmt_num(x)
+tab <- sapply(hr_tab, function(h) {
+  vapply(shown, function(m) {
+    fmt_bias(lim_tab$bias[lim_tab$method == m & abs(lim_tab$HR - h) < 1e-8])
+  }, character(1))
+})
+colnames(tab) <- paste("HR", hr_tab)
+rownames(tab) <- gsub("_", "-", shown)
+knitr::kable(tab, align = "rrrrr",
+             caption = "Large-sample bias of the log hazard ratio")
+```
+
+Values smaller than `r fmt_num(tiny)` in absolute value, which are rounding
+error, are shown as 0.
+
+```{r table-numbers, include = FALSE}
+bias_at <- function(m, h) {
+  lim_tab$bias[lim_tab$method == m & abs(lim_tab$HR - h) < 1e-8]
+}
+h_max <- max(hr_tab)
+```
+
+At a hazard ratio of `r h_max`, the limit of the Pike estimator differs from
+the true value by `r fmt_num(abs(bias_at("Pike", h_max)))` on the log
+scale. One Newton step
+from it leaves `r fmt_num(abs(bias_at("Pike_Newton", h_max)))`, and one
+Halley step `r fmt_num(abs(bias_at("Pike_Halley", h_max)))`, which no longer
+shrinks as the sample size grows. The MH-Halley limit is the true value up
+to rounding error.
+
+## Finite samples approach the limits
+
+In simulated trials of this design with increasing sample sizes, the mean
+difference between each estimate and the Cox estimate approaches the
+difference between their limits. Because the Cox estimator converges to the
+true value, that difference is the large-sample bias of the estimator.
+
+```{r finite}
+hr_check <- 5
+sizes <- c(200, 1000, 5000)
+frac <- design$E / (design$n_T + design$n_C)
+check_sc <- data.frame(label = paste("n =", sizes), n_T = sizes / 2,
+                       n_C = sizes / 2, hazard_C = design$hazard_C,
+                       HR = hr_check, a = design$a, E = frac * sizes)
+fin <- CompareOC(check_sc,
+                 methods = c("Cox_NR", "Pike", "Pike_Halley", "MH",
+                             "MH_Halley"),
+                 nsim = 50, seed = 1, reference = "Cox_NR")
+est <- fin$estimates
+ref <- est[est$method == "Cox_NR", c("label", "simID", "coef")]
+names(ref)[3] <- "coef_ref"
+dev <- merge(est[est$method != "Cox_NR", ], ref, by = c("label", "simID"))
+dev$d <- dev$coef - dev$coef_ref
+mean_dev <- aggregate(d ~ label + method, data = dev, FUN = mean)
+mean_dev$n <- sizes[match(as.character(mean_dev$label), check_sc$label)]
+lim_check <- as.data.frame(do.call(LimitHR, c(list(HR = hr_check), design)))
+mean_dev$limit <- lim_check$bias[match(mean_dev$method, lim_check$method)]
+```
+
+```{r finite-numbers, include = FALSE}
+at <- function(m) {
+  x <- mean_dev[mean_dev$method == m, ]
+  x[which.max(x$n), ]
+}
+```
+
+Each panel has its own vertical scale; the dashed lines are the large-sample
+biases.
+
+```{r figure-finite, fig.height = 4.5, fig.alt = "Mean difference from the Cox_NR estimate against the sample size, in one panel for each of the Pike and Mantel-Haenszel estimators and the Halley steps from them, with dashed lines at the large-sample bias."}
+plot_d <- mean_dev
+plot_d$method <- gsub("_", "-", plot_d$method)
+ggplot(plot_d, aes(x = n, y = d)) +
+  geom_hline(aes(yintercept = limit), linetype = "dashed") +
+  geom_point(size = 2) +
+  geom_line() +
+  scale_x_log10() +
+  facet_wrap(~ method, scales = "free_y") +
+  labs(x = "Number of subjects",
+       y = "Mean difference from Cox-NR (log HR)") +
+  theme_bw()
+```
+
+With a hazard ratio of `r hr_check`, `r fmt_num(max(sizes))` subjects, and
+`r attr(fin, "nsim")` trials, the mean difference of the Pike estimator from
+the Cox estimate is
+`r fmt_num(at("Pike")$d)`, compared with a large-sample bias of
+`r fmt_num(at("Pike")$limit)`, and that of one Halley step from the Pike
+estimate is `r fmt_num(at("Pike_Halley")$d)`, compared with
+`r fmt_num(at("Pike_Halley")$limit)`. The mean differences of the
+Mantel-Haenszel estimator and of MH-Halley, whose limits are the true value,
+are `r fmt_num(at("MH")$d)` and `r fmt_num(at("MH_Halley")$d)`.

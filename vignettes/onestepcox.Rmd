@@ -10,6 +10,17 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
                       fig.width = 6, fig.height = 3.5, out.width = "100%")
+# A number written for the text: plain for moderate sizes, and as
+# m x 10^e (HTML) otherwise
+fmt_num <- function(x, digits = 2) {
+  x <- signif(x, digits)
+  if (!is.finite(x)) return(as.character(x))
+  if (abs(x) < 1e-300) return("0")
+  e <- floor(log10(abs(x)))
+  if (e >= -3 && e <= 4) return(format(x, digits = digits, big.mark = ","))
+  sprintf("%s &times; 10<sup>%d</sup>", format(x / 10^e, digits = digits),
+          as.integer(e))
+}
 ```
 
 ```{r setup}
@@ -59,7 +70,7 @@ The treatment group has `hormon` equal to
 `r attr(est, "groups")[["treatment"]]` (hormonal therapy), and the control
 group has `hormon` equal to `r attr(est, "groups")[["control"]]`: without
 the argument `control`, the control group is the smallest value of the group
-variable.
+variable, or the first level of a factor.
 
 `"Cox"` is the estimate of `survival::coxph()` with a tight convergence
 tolerance, and `"Cox_NR"` is the Cox estimate computed by Newton-Raphson
@@ -68,10 +79,9 @@ until the Newton step is negligible. The MH-Halley estimate of the hazard
 ratio is `r sprintf("%.4f", est["MH_Halley", "exp(coef)"])`, and the Cox
 estimate (`"Cox_NR"`) is `r sprintf("%.4f", est["Cox_NR", "exp(coef)"])`.
 Their log hazard ratios differ by
-`r signif(abs(est["MH_Halley", "coef"] - est["Cox_NR", "coef"]), 2)`, and
-the Mantel-Haenszel estimate, from which the step starts, differs from the
-Cox estimate by
-`r signif(abs(est["MH", "coef"] - est["Cox_NR", "coef"]), 2)`.
+`r fmt_num(abs(est["MH_Halley", "coef"] - est["Cox_NR", "coef"]))`, and the
+Mantel-Haenszel estimate, from which the step starts, differs from the Cox
+estimate by `r fmt_num(abs(est["MH", "coef"] - est["Cox_NR", "coef"]))`.
 
 `plot()` draws the estimates and their confidence intervals as a forest
 plot. It returns a `ggplot` object, which can be changed further with
@@ -92,6 +102,19 @@ EstHR(Surv(rfstime, status) ~ hormon + strata(grade), data = survival::gbsg,
       method = c("MH_Halley", "Cox_NR"), ties = "breslow")
 ```
 
+## Vectors instead of a formula
+
+The same estimates can be computed from vectors. The control group is then
+given by `control`, and the event indicator is coded 1 (event) and 0
+(censored), or TRUE and FALSE.
+
+```{r vectors}
+d <- survival::gbsg
+EstHR(d$rfstime, d$status, d$hormon, control = 0, method = "MH_Halley")
+```
+
+## Risk-set summaries
+
 All methods except `"Cox"` use the same risk-set summaries, which
 `RiskTable()` returns: for each distinct event time (within strata), the
 numbers at risk in the treatment and control groups (`n_T`, `n_C`), the
@@ -102,117 +125,15 @@ events (`O`).
 head(RiskTable(Surv(rfstime, status) ~ hormon, data = survival::gbsg))
 ```
 
-## Comparing estimators in simulations
+## Further articles
 
-`GenSimData()` generates two-group trials with exponential survival times,
-uniform accrual, and an analysis at a fixed number of events, optionally with
-dropout, strata, and times rounded up to multiples of a time unit (which
-produces ties). `CompareOC()` simulates the trials of one or more scenarios
-with `GenSimData()`, applies `EstHR()` to each, and summarizes, for each
-method, the deviation from a reference estimator and the bias, root mean
-squared error, and coverage relative to the true hazard ratio. The example
-below uses `"Cox_NR"` as the reference: it iterates to the root of the score
-on the same risk-set summaries and does not call `survival::coxph()` for
-every replicate.
-
-```{r simulation}
-scenarios <- data.frame(
-  label    = c("HR 0.7", "HR 2"),
-  n_T      = 100,
-  n_C      = 100,
-  hazard_C = log(2) / 18,
-  HR       = c(0.7, 2),
-  a        = 12,
-  E        = 150
-)
-nsim <- 100
-res <- CompareOC(scenarios,
-                 methods = c("Cox_NR", "MH_Halley", "MH_Newton",
-                             "Pike_Halley", "MH", "Pike", "Peto"),
-                 nsim = nsim, seed = 1, reference = "Cox_NR")
-res
-```
-
-The column `time` is the computing time per replicate in seconds, which
-depends on the machine.
-
-```{r deviation, fig.alt = "Deviation of each method from the Cox_NR estimate of the log hazard ratio in the simulated scenarios."}
-plot(res, what = "deviation")
-```
-
-```{r deviation-max, include = FALSE}
-dev_max <- function(m) {
-  max(res$summary$dev_max[res$summary$method == m], na.rm = TRUE)
-}
-```
-
-Over the `r nsim` replicates of each scenario, the largest absolute
-difference between the MH-Halley and the `"Cox_NR"` estimates of the log
-hazard ratio was `r signif(dev_max("MH_Halley"), 2)`, compared with
-`r signif(dev_max("MH_Newton"), 2)` for one Newton step from the same anchor
-and `r signif(dev_max("Pike_Halley"), 2)` for one Halley step from the Pike
-estimate.
-
-## Large-sample limits
-
-A one-step correction converges to the Cox limit only if its anchor does.
-`LimitHR()` computes the limits of the estimators as the sample size grows,
-under the design of `GenSimData()`. Under proportional hazards, the
-Mantel-Haenszel and Cox estimators converge to the true log hazard ratio, and
-so do the corrections from the Mantel-Haenszel anchor. Unless the hazard
-ratio is 1, the Pike and Peto estimators and the corrections from the Pike
-anchor converge to other values. The example below uses the design of the
-simulation above, with one more, larger hazard ratio.
-
-```{r limits, fig.alt = "Absolute large-sample bias of the Pike and Peto estimators and of the corrections from the Pike anchor against the hazard ratio."}
-lim <- LimitHR(HR = c(scenarios$HR, 10), hazard_C = log(2) / 18,
-               n_T = 100, n_C = 100, a = 12, E = 150)
-plot(lim)
-```
-
-```{r limits-bias, include = FALSE}
-lim_df <- as.data.frame(lim)
-hr_max <- max(lim_df$HR)
-bias_at <- function(m, hr) {
-  lim_df$bias[lim_df$method == m & abs(lim_df$HR - hr) < 1e-8]
-}
-mh_halley_max <- max(abs(lim_df$bias[lim_df$method == "MH_Halley"]))
-```
-
-With a hazard ratio of `r hr_max`, the limit of the Pike estimator of the
-log hazard ratio differs from the true value by
-`r signif(abs(bias_at("Pike", hr_max)), 2)`, and one Halley step from the
-Pike estimate still leaves a difference of
-`r signif(abs(bias_at("Pike_Halley", hr_max)), 2)`. The MH-Halley limit is
-the true value up to rounding error: the largest absolute difference over
-these hazard ratios is `r signif(mh_halley_max, 1)`.
-
-## Reproduction, validation, and the scripts of the article
-
-The package comes with scripts that check it against published results and
-an independent Python implementation. `inst/reproduce/` reproduces published
-results, and `inst/validation/` compares the estimators with the Python
-implementation and `LimitHR()` with large-sample simulations. Each script
-writes its checks with a status (PASS, EXPLAINED, FAIL, or INFO) to a
-`results/` folder, and `inst/validation/summarize_validation.R` counts them.
-The counts recorded when the scripts were last run
-(`validation/results/summary.csv` in the installed package) are:
-
-```{r validation}
-summary_file <- system.file("validation", "results", "summary.csv",
-                            package = "onestepcox", mustWork = TRUE)
-knitr::kable(utils::read.csv(summary_file))
-```
-
-The scripts that produce the tables and figures of the article accompanying
-the package are in `inst/scripts/` (main text) and `inst/sup_info/`
-(Supporting Information). Their results are kept in the GitHub repository and
-are not part of the package build. When the package is installed, the
-folders of `inst/` are placed at the top level of the installed package:
-
-```{r folders, eval = FALSE}
-system.file("reproduce", package = "onestepcox")
-system.file("validation", package = "onestepcox")
-system.file("scripts", package = "onestepcox")
-system.file("sup_info", package = "onestepcox")
-```
+- [Agreement with the survival package](validation.html) compares the
+  estimates with `survival::coxph()` and `survival::survdiff()` on data sets
+  of the `survival` package and shows how fast the difference from the Cox
+  estimate shrinks as the sample size grows.
+- [Operating characteristics in simulations](simulation.html) uses
+  `GenSimData()` and `CompareOC()` to compare the estimators in simulated
+  trials.
+- [Large-sample limits and the choice of anchor](limits.html) uses
+  `LimitHR()` to show why the step starts from the Mantel-Haenszel estimate
+  rather than the Pike estimate.

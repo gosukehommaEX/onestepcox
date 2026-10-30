@@ -15,10 +15,10 @@ times and stratification are supported. The package is written in R only.
 remotes::install_github("gosukehommaEX/onestepcox")
 ```
 
-The vignette walks through the estimators, the simulations, and the
-large-sample limits. To build it, install with
+The vignettes describe the estimators, their agreement with the `survival`
+package, simulations, and the large-sample limits. To build them, install with
 `remotes::install_github("gosukehommaEX/onestepcox", build_vignettes = TRUE)`
-and see `vignette("onestepcox")`.
+and see `browseVignettes("onestepcox")`.
 
 ## Methods of `EstHR()`
 

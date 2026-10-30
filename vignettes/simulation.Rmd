@@ -1,0 +1,204 @@
+---
+title: "Operating characteristics in simulations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Operating characteristics in simulations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
+                      fig.width = 6, fig.height = 3.5, out.width = "100%")
+# A number written for the text: plain for moderate sizes, and as
+# m x 10^e (HTML) otherwise
+fmt_num <- function(x, digits = 2) {
+  x <- signif(x, digits)
+  if (!is.finite(x)) return(as.character(x))
+  if (abs(x) < 1e-300) return("0")
+  e <- floor(log10(abs(x)))
+  if (e >= -3 && e <= 4) return(format(x, digits = digits, big.mark = ","))
+  sprintf("%s &times; 10<sup>%d</sup>", format(x / 10^e, digits = digits),
+          as.integer(e))
+}
+```
+
+```{r setup}
+library(onestepcox)
+library(ggplot2)
+```
+
+`GenSimData()` generates two-group trials, and `CompareOC()` applies the
+estimators of `EstHR()` to them and summarizes how they behave. This article
+shows both.
+
+## Simulated trials
+
+In each trial of `GenSimData()`, subjects enter uniformly over an accrual
+period of length `a`, their survival times are exponential with hazard
+`hazard_C` in the control group and `HR * hazard_C` in the treatment group,
+and the analysis takes place at the `E`-th event. Subjects without an event
+by then are censored.
+
+```{r one-trial}
+one <- GenSimData(nsim = 1, n_T = 100, n_C = 100, hazard_C = log(2) / 18,
+                  HR = 0.7, a = 12, E = 150, seed = 2)
+head(one)
+```
+
+The group is a factor with levels `"T"` and `"C"`. With vectors, `EstHR()`
+is told which group is the control group:
+
+```{r one-estimate}
+EstHR(one$time, one$event, one$group, control = "C",
+      method = c("MH_Halley", "Cox_NR"))
+```
+
+The Kaplan-Meier curves of this trial:
+
+```{r km, fig.alt = "Kaplan-Meier curves of the treatment and control groups of one simulated trial."}
+km <- survival::survfit(survival::Surv(time, event) ~ group,
+                        data = as.data.frame(one))
+km_d <- data.frame(time = km$time, surv = km$surv,
+                   group = rep(sub("group=", "", names(km$strata)),
+                               km$strata))
+# The curves start at survival 1 at time 0
+km_d <- rbind(data.frame(time = 0, surv = 1, group = unique(km_d$group)),
+              km_d)
+ggplot(km_d, aes(x = time, y = surv, colour = group)) +
+  geom_step() +
+  labs(x = "Time since entry", y = "Survival probability", colour = "Group") +
+  theme_bw()
+```
+
+Strata with their own baseline hazards are given by `strata_prop` and
+`strata_hazard`, and `time_unit` rounds the times up to multiples of a unit,
+which produces tied event times.
+
+```{r strata-ties}
+two <- GenSimData(nsim = 1, n_T = 100, n_C = 100, hazard_C = log(2) / 18,
+                  HR = 0.7, a = 12, E = 150, strata_prop = c(0.5, 0.5),
+                  strata_hazard = c(1, 3), time_unit = 1, seed = 2)
+table(stratum = two$stratum, group = two$group)
+```
+
+```{r tied, include = FALSE}
+event_times <- two$time[two$event == 1]
+```
+
+In this trial, the `r sum(two$event)` events fall on
+`r length(unique(event_times))` distinct times.
+
+## Comparing the estimators
+
+`CompareOC()` runs `GenSimData()` for each scenario (one row of a data
+frame), applies `EstHR()` to each trial, and summarizes each method. The
+scenarios below have hazard ratios on both sides of 1 and, in the last one,
+strata and tied times. The reference for the deviations is `"Cox_NR"`, the
+Cox estimate by Newton-Raphson iteration on the risk-set summaries.
+
+```{r scenarios}
+scenarios <- data.frame(
+  label     = c("HR 0.5", "HR 1", "HR 2", "HR 2, strata, ties"),
+  n_T       = 100,
+  n_C       = 100,
+  hazard_C  = log(2) / 18,
+  HR        = c(0.5, 1, 2, 2),
+  a         = 12,
+  E         = 150,
+  time_unit = c(0, 0, 0, 1)
+)
+scenarios$strata_prop <- list(NULL, NULL, NULL, c(0.5, 0.5))
+scenarios$strata_hazard <- list(NULL, NULL, NULL, c(1, 3))
+nsim <- 200
+res <- CompareOC(scenarios,
+                 methods = c("Cox_NR", "Cox", "MH_Halley", "MH_Newton",
+                             "Pike_Halley", "MH", "Pike", "Peto"),
+                 nsim = nsim, seed = 1, reference = "Cox_NR")
+res
+```
+
+### Deviation from the Cox estimate
+
+The first figure shows, for each method and scenario, a box plot of the
+absolute difference from the Cox estimate over the `r nsim` trials.
+
+```{r deviation, fig.height = 4.5, fig.alt = "Absolute deviation of each method from the Cox_NR estimate of the log hazard ratio by scenario, on a logarithmic scale."}
+plot(res, what = "deviation")
+```
+
+```{r deviation-numbers, include = FALSE}
+s <- res$summary
+dev_max <- function(m) max(s$dev_max[s$method == m])
+mis_max <- function(m) max(s$mismatch_2dp[s$method == m])
+mis_text <- function(m) {
+  p <- mis_max(m)
+  if (p < 1e-12) return("none of the trials")
+  paste("up to a proportion", fmt_num(p), "of the trials of a scenario")
+}
+cl <- attr(res, "conf.level")
+mc_se <- sqrt(cl * (1 - cl) / nsim)
+```
+
+The largest difference of MH-Halley over all scenarios is
+`r fmt_num(dev_max("MH_Halley"))`, compared with `r fmt_num(dev_max("MH"))`
+for the Mantel-Haenszel estimate, `r fmt_num(dev_max("Pike"))` for the Pike
+estimate, and `r fmt_num(dev_max("Peto"))` for the Peto estimate. Written
+with two decimals, the hazard ratio of MH-Halley differs from that of the Cox
+estimate in `r mis_text("MH_Halley")`, compared with
+`r mis_text("Peto")` for the Peto estimate.
+
+### Bias, RMSE, and coverage relative to the true hazard ratio
+
+The next figures show the anchors and MH-Halley; MH-Halley lies on top of
+the Cox estimate (`"Cox_NR"`), and the one-step corrections and `"Cox"` would
+lie there too.
+
+```{r shown, include = FALSE}
+shown <- c("Cox_NR", "MH_Halley", "MH", "Pike", "Peto")
+```
+
+```{r bias, fig.alt = "Bias of the log hazard ratio of each method relative to the true value by scenario."}
+plot(res, what = "bias", methods = shown)
+```
+
+```{r rmse, fig.alt = "Root mean squared error of the log hazard ratio of each method by scenario."}
+plot(res, what = "rmse", methods = shown)
+```
+
+```{r coverage, fig.alt = "Coverage of the confidence intervals of each method by scenario."}
+plot(res, what = "coverage", methods = shown)
+```
+
+The table gives these summaries for MH-Halley and the Cox estimate. They are
+close, because the two estimates differ by far less than their standard
+errors.
+
+```{r summary-table}
+tab <- s[s$method %in% c("MH_Halley", "Cox_NR"),
+         c("label", "method", "bias", "rmse", "coverage", "se_mean")]
+tab$method <- gsub("_", "-", tab$method)
+for (v in c("bias", "rmse", "se_mean")) tab[[v]] <- sprintf("%.4f", tab[[v]])
+tab$coverage <- sprintf("%.3f", tab$coverage)
+knitr::kable(tab, row.names = FALSE, align = "llrrrr",
+             col.names = c("Scenario", "Method", "Bias", "RMSE", "Coverage",
+                           "Mean SE"))
+```
+
+With `r nsim` trials, the Monte Carlo standard error of a coverage near the
+nominal level `r cl` is about `r fmt_num(mc_se)`.
+
+### Standard errors and computing time
+
+The ratio of the standard error of each method to that of the Cox estimate:
+
+```{r se-ratio, fig.alt = "Median ratio of the standard error of each method to that of the Cox_NR estimate by scenario."}
+plot(res, what = "se_ratio", methods = setdiff(shown, "Cox_NR"))
+```
+
+The computing time per trial depends on the machine. All methods except
+`"Cox"` share the risk-set summaries; `"Cox"` calls `survival::coxph()`.
+
+```{r time, fig.alt = "Computing time per trial of each method by scenario."}
+plot(res, what = "time")
+```

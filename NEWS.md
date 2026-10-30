@@ -42,5 +42,7 @@
   test data 1 of Therneau and Grambsch (2000); `inst/validation/` compares the
   estimators with an independent Python implementation and `LimitHR()` with
   large-sample simulations.
-* A vignette (`vignette("onestepcox")`) shows the estimators, the simulation
-  functions, and the large-sample limits.
+* Vignettes (`browseVignettes("onestepcox")`): an introduction, the agreement
+  with `survival::coxph()` and `survival::survdiff()`, simulations with
+  `GenSimData()` and `CompareOC()`, and the large-sample limits of
+  `LimitHR()`.

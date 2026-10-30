@@ -22,3 +22,11 @@ reference:
 - title: Package
   contents:
   - onestepcox-package
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - validation
+  - simulation
+  - limits
