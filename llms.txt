@@ -9,6 +9,9 @@ risk sets, and a Wald confidence interval is returned. The Efron and
 Breslow handling of tied event times and stratification are supported.
 The package is written in R only.
 
+The documentation, with the reference manual and the vignettes, is at
+<https://gosukehommaex.github.io/onestepcox/>.
+
 ## Installation
 
 ``` r
