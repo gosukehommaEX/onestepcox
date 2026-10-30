@@ -37,10 +37,12 @@ fmt_sci <- function(v) {
     if (abs(z) < 1e-300) return("$0$")
     e <- floor(log10(abs(z)))
     m <- z / 10^e
-    if (round(m, 1) >= 10) {
+    if (abs(round(m, 1)) >= 10) {
       m <- m / 10
       e <- e + 1
     }
+    # Without the factor 10^0
+    if (as.integer(e) == 0L) return(sprintf("$%.1f$", m))
     sprintf("$%.1f \\times 10^{%d}$", m, as.integer(e))
   }, character(1))
 }

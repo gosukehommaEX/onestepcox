@@ -191,7 +191,7 @@ other arguments are given by name.
 EstHR(Surv(rfstime, status) ~ hormon, data = survival::gbsg,
       method = "MH_Halley")
 
-# Several methods, stratified by tumour grade
+# Several methods, stratified by tumor grade
 est <- EstHR(Surv(rfstime, status) ~ hormon + strata(grade),
              data = survival::gbsg,
              method = c("MH_Halley", "Pike", "Peto", "Cox"))

@@ -32,7 +32,7 @@
 legend, one per method. Default \code{NULL}: the names of the methods
 with underscores replaced by hyphens, such as \code{"MH-Halley"}.}
 
-\item{col}{Colours of the methods, recycled. Default \code{NULL} (the
+\item{col}{Colors of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
 
 \item{shape}{Point shapes of the methods, with the numbers of \code{pch}
@@ -58,7 +58,7 @@ right axis. Default 3.}
 (solid) and at the Cox estimate (dashed; from \code{"Cox"}, or
 \code{"Cox_NR"} without \code{"Cox"}). Default \code{TRUE}.}
 
-\item{ref_col}{Colour of the reference lines. Default \code{"grey50"}.}
+\item{ref_col}{Color of the reference lines. Default \code{"grey50"}.}
 
 \item{legend_pos}{Position of a legend of the methods: \code{"none"}
 (default, as the methods label the vertical axis), \code{"bottom"},
@@ -74,7 +74,7 @@ the bottom or top, and 1 otherwise.}
 
 \item{xlim}{Limits of the horizontal axis (hazard ratio), two increasing
 positive numbers. Default \code{NULL}: the range of the estimates, the
-intervals, and the reference line at 1, widened by 4 per cent on the
+intervals, and the reference line at 1, widened by 4 percent on the
 logarithmic scale. Intervals beyond the limits are cut at the edge of
 the panel.}
 

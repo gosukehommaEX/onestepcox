@@ -20,7 +20,7 @@
 #' @param labels Labels of the methods in the legend, one per method of
 #'   \code{methods}. Default \code{NULL}: the names of the methods with
 #'   underscores replaced by hyphens, such as \code{"MH-Halley"}.
-#' @param col Colours of the methods, recycled. Default \code{NULL} (the
+#' @param col Colors of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
 #' @param shape Point shapes of the methods, with the numbers of \code{pch}
 #'   of base graphics, recycled; for \code{"deviation"}, the shapes of the

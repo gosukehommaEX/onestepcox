@@ -43,7 +43,7 @@ axis with a dashed line at 0.}
 \code{methods}. Default \code{NULL}: the names of the methods with
 underscores replaced by hyphens, such as \code{"Pike-Halley"}.}
 
-\item{col}{Colours of the methods, recycled. Default \code{NULL} (the
+\item{col}{Colors of the methods, recycled. Default \code{NULL} (the
 Okabe-Ito palette).}
 
 \item{shape}{Point shapes of the methods, with the numbers of \code{pch}

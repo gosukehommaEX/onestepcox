@@ -1,6 +1,6 @@
 # Tests for the internal function plot_scales()
 
-test_that("Each method is mapped to its colour and shape", {
+test_that("Each method is mapped to its color and shape", {
   df <- data.frame(x = 1:3, y = c(2, 1, 3),
                    m = factor(c("B", "A", "C"), levels = c("A", "B", "C")))
   sc <- plot_scales(c("A", "B", "C"), c("a", "b", "c"),
@@ -17,7 +17,7 @@ test_that("Each method is mapped to its colour and shape", {
   for (s in sc) expect_identical(s$get_limits(), c("A", "B", "C"))
 })
 
-test_that("The default colours are those of plot_colors(), recycled", {
+test_that("The default colors are those of plot_colors(), recycled", {
   df <- data.frame(x = 1:3, y = c(2, 1, 3), m = c("A", "B", "C"))
   sc <- plot_scales(c("A", "B", "C"), c("a", "b", "c"),
                     aesthetics = "colour")

@@ -312,7 +312,7 @@ writeLines(tabS5, file.path(tab_dir, "tableS5_timing.tex"))
 # Table S6: applications, all methods, Efron and Breslow -------------------
 s6_analyses <- c(
   gbsg = "\\texttt{gbsg}",
-  gbsg_grade = "\\texttt{gbsg}, stratified by tumour grade",
+  gbsg_grade = "\\texttt{gbsg}, stratified by tumor grade",
   pharmacoSmoking = "\\texttt{pharmacoSmoking}",
   pharmacoSmoking_ageGroup2 = paste0("\\texttt{pharmacoSmoking}, ",
                                      "stratified by age group")

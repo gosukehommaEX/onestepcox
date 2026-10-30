@@ -34,7 +34,7 @@
   and `"LimitHR"` with `print()` and `plot()` methods. The `plot()` methods
   of the three classes draw with 'ggplot2' and return `ggplot` objects. They
   take labels of the methods (by default with hyphens, such as
-  `MH-Halley`), colours, point shapes and sizes, line types and widths, the
+  `MH-Halley`), colors, point shapes and sizes, line types and widths, the
   base font size, and the position of the legend (outside the panel at the
   bottom, top, right, or left, or inside it). The legend is below the panel
   by default for the results of `CompareOC()` and `LimitHR()`.

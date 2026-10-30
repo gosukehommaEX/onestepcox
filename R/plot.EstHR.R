@@ -12,7 +12,7 @@
 #' @param labels Labels of the methods on the vertical axis and in the
 #'   legend, one per method. Default \code{NULL}: the names of the methods
 #'   with underscores replaced by hyphens, such as \code{"MH-Halley"}.
-#' @param col Colours of the methods, recycled. Default \code{NULL} (the
+#' @param col Colors of the methods, recycled. Default \code{NULL} (the
 #'   Okabe-Ito palette).
 #' @param shape Point shapes of the methods, with the numbers of \code{pch}
 #'   of base graphics, recycled. Default 15 (filled square).
@@ -29,7 +29,7 @@
 #' @param ref_lines Logical. Draw the reference lines at the hazard ratio 1
 #'   (solid) and at the Cox estimate (dashed; from \code{"Cox"}, or
 #'   \code{"Cox_NR"} without \code{"Cox"}). Default \code{TRUE}.
-#' @param ref_col Colour of the reference lines. Default \code{"grey50"}.
+#' @param ref_col Color of the reference lines. Default \code{"grey50"}.
 #' @param legend_pos Position of a legend of the methods: \code{"none"}
 #'   (default, as the methods label the vertical axis), \code{"bottom"},
 #'   \code{"top"}, \code{"right"}, or \code{"left"} (outside the plot panel),
@@ -41,7 +41,7 @@
 #' @param xlab,main Axis title and main title.
 #' @param xlim Limits of the horizontal axis (hazard ratio), two increasing
 #'   positive numbers. Default \code{NULL}: the range of the estimates, the
-#'   intervals, and the reference line at 1, widened by 4 per cent on the
+#'   intervals, and the reference line at 1, widened by 4 percent on the
 #'   logarithmic scale. Intervals beyond the limits are cut at the edge of
 #'   the panel.
 #' @param ... Not used.

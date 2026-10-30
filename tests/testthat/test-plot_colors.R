@@ -1,6 +1,6 @@
 # Tests for the internal function plot_colors()
 
-test_that("The default palette and given colours are recycled", {
+test_that("The default palette and given colors are recycled", {
   expect_identical(plot_colors(2), c("#0072B2", "#D55E00"))
   expect_length(plot_colors(10), 10)
   expect_identical(plot_colors(10)[9], "#0072B2")

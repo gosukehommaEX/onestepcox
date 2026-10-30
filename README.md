@@ -1,5 +1,12 @@
 # onestepcox
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/gosukehommaEX/onestepcox/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gosukehommaEX/onestepcox/actions/workflows/R-CMD-check.yaml)
+[![License: GPL (>= 2)](https://img.shields.io/badge/License-GPL%20%28%3E%3D%202%29-blue.svg)](https://www.r-project.org/Licenses/GPL-2)
+[![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://gosukehommaex.github.io/onestepcox/)
+[![Codecov test coverage](https://codecov.io/gh/gosukehommaEX/onestepcox/graph/badge.svg)](https://app.codecov.io/gh/gosukehommaEX/onestepcox)
+<!-- badges: end -->
+
 `onestepcox` computes closed-form estimators of the hazard ratio of a
 two-group comparison of survival data that approximate the Cox partial
 likelihood estimator without iteration. The proposed estimator starts from the
@@ -51,7 +58,7 @@ est <- EstHR(Surv(rfstime, status) ~ hormon, data = survival::gbsg,
 est        # print(): groups, estimates, z, p-values, and intervals
 plot(est)  # forest plot of the hazard ratios
 
-# Breslow ties and strata by tumour grade
+# Breslow ties and strata by tumor grade
 EstHR(Surv(rfstime, status) ~ hormon + strata(grade), data = survival::gbsg,
       method = "MH_Halley", ties = "breslow")
 
@@ -68,7 +75,7 @@ The `plot()` methods of `EstHR()`, `CompareOC()`, and `LimitHR()` results
 draw with ggplot2 and return a `ggplot` object, which can be changed further
 with ggplot2 (for example `plot(est) + ggplot2::theme(...)`) or saved with
 `ggplot2::ggsave()`. They take the labels of the methods (`labels`; by
-default the method names with hyphens, such as `MH-Halley`), the colours
+default the method names with hyphens, such as `MH-Halley`), the colors
 (`col`), point shapes and sizes (`shape`, `size`), line types and widths
 (`linetype`, `linewidth`), the base font size in points (`base_size`), and
 the position of the legend (`legend_pos`: `"bottom"`, `"top"`, `"right"`, or

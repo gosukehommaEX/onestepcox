@@ -205,7 +205,7 @@ t2_methods <- c("Cox", "MH_Halley", "MH_Newton", "Pike_Halley",
                 "Pike_Newton", "MH", "Pike", "Peto")
 t2_analyses <- c(
   gbsg = "\\texttt{gbsg}",
-  gbsg_grade = "\\texttt{gbsg}, stratified by tumour grade",
+  gbsg_grade = "\\texttt{gbsg}, stratified by tumor grade",
   pharmacoSmoking = "\\texttt{pharmacoSmoking}",
   pharmacoSmoking_ageGroup2 = paste0("\\texttt{pharmacoSmoking}, ",
                                      "stratified by age group")

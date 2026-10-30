@@ -22,7 +22,8 @@ Description: Closed-form estimators of the hazard ratio of a two-group
     summaries, and provides functions for simulation studies and for the
     large-sample limits of the estimators.
 License: GPL (>= 2)
-URL: https://github.com/gosukehommaEX/onestepcox
+URL: https://github.com/gosukehommaEX/onestepcox,
+    https://gosukehommaex.github.io/onestepcox/
 BugReports: https://github.com/gosukehommaEX/onestepcox/issues
 Encoding: UTF-8
 Language: en-US

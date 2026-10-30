@@ -18,3 +18,4 @@
 ^inst/scripts/results$
 ^inst/sup_info/results$
 __pycache__
+^codecov\.yml$

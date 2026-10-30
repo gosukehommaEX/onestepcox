@@ -225,16 +225,19 @@ In simulated trials of increasing size, the difference between each
 estimate and the Cox estimate shrinks at a rate set by the error of its
 anchor and the order of its correction: `n^(-1/2)` for the
 Mantel-Haenszel estimate, `n^(-1)` for one Newton step, and `n^(-3/2)` for
-one Halley step. The reference is `"Cox_NR"`; the figure also shows the
-difference of `coxph()` from it. The dashed lines have the slopes of these
-orders and pass through the median at the smallest sample size.
+one Halley step. The reference is `"Cox_NR"`, the root of the score found by
+Newton-Raphson iteration on the same risk-set summaries. The iteration stops
+after a step smaller than `tol` (`r fmt_num(formals(EstHR)$tol)` by default),
+and because Newton-Raphson iteration converges quadratically, the error left
+after that step is far smaller than `tol`. The dashed lines have the slopes of
+these orders and pass through the median at the smallest sample size.
 
 ```{r convergence}
 ns <- c(100, 300, 1000, 3000, 10000)
-reps <- 20
+reps <- 100
 hr_conv <- 2
 event_frac <- 0.75
-conv_methods <- c("MH", "MH_Newton", "MH_Halley", "Cox", "Cox_NR")
+conv_methods <- c("MH", "MH_Newton", "MH_Halley", "Cox_NR")
 conv <- do.call(rbind, lapply(seq_along(ns), function(i) {
   n <- ns[i]
   sim <- as.data.frame(GenSimData(nsim = reps, n_T = n / 2, n_C = n / 2,
@@ -264,11 +267,11 @@ ref_lines <- do.call(rbind, lapply(names(rates), function(m) {
 }))
 ```
 
-```{r figure-convergence, fig.alt = "Median absolute difference from the Cox_NR estimate against the sample size on logarithmic scales, for the Mantel-Haenszel estimate, one Newton step, one Halley step, and coxph()."}
+```{r figure-convergence, fig.alt = "Median absolute difference from the Cox_NR estimate against the sample size on logarithmic scales, for the Mantel-Haenszel estimate, one Newton step, and one Halley step."}
 relabel <- function(x) {
   x$method <- factor(x$method,
-                     levels = c("MH", "MH_Newton", "MH_Halley", "Cox"),
-                     labels = c("MH", "MH-Newton", "MH-Halley", "coxph()"))
+                     levels = c("MH", "MH_Newton", "MH_Halley"),
+                     labels = c("MH", "MH-Newton", "MH-Halley"))
   x
 }
 ggplot(relabel(med), aes(x = n, y = pmax(dev, 1e-16), colour = method,
@@ -294,11 +297,10 @@ scale are `r sprintf("%.2f", slope("MH"))` for the Mantel-Haenszel estimate,
 `r sprintf("%.2f", slope("MH_Newton"))` for one Newton step, and
 `r sprintf("%.2f", slope("MH_Halley"))` for one Halley step. With
 `r fmt_num(max(ns))` subjects, the median difference of MH-Halley is
-`r fmt_num(at_max_n("MH_Halley"))`, and that of `coxph()` is
-`r fmt_num(at_max_n("Cox"))`.
-`coxph()` stops when the relative change of the log partial likelihood is
-small rather than when the step is small, which is why these articles use
-`"Cox_NR"` as the reference.
+`r fmt_num(at_max_n("MH_Halley"))`. `coxph()` agrees with `"Cox_NR"` on the
+data sets above (first table), but it stops when the relative change of the
+log partial likelihood is small rather than when the step is small, which is
+why these articles use `"Cox_NR"` as the reference.
 
 ## Validation scripts of the package
 

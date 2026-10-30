@@ -134,6 +134,7 @@ mis_max <- function(m) max(s$mismatch_2dp[s$method == m])
 mis_text <- function(m) {
   p <- mis_max(m)
   if (p < 1e-12) return("none of the trials")
+  if (p > 1 - 1e-12) return("all the trials of at least one scenario")
   paste("up to a proportion", fmt_num(p), "of the trials of a scenario")
 }
 cl <- attr(res, "conf.level")

@@ -3,7 +3,7 @@
 #' @param methods Character vector of methods, in the order of the legend.
 #' @param labels Character vector of labels, one per method.
 #' @param col \code{NULL} for the default palette of \code{plot_colors()}, or
-#'   a vector of colours, recycled.
+#'   a vector of colors, recycled.
 #' @param shape Point shapes, recycled.
 #' @param linetype Line types, recycled.
 #' @param aesthetics Aesthetics for which a scale is returned, among
