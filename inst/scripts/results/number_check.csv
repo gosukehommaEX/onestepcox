@@ -96,3 +96,4 @@
 "dis_n30","main.tex","input","30","30","30","int","PASS","","","min(gridC_scenarios()$n)","02d2cc0f402e6c33a51a66bcdb1af0d5"
 "dis_n60","main.tex","input","60","60","60","int","PASS","","","max(gridC_scenarios()$n)","02d2cc0f402e6c33a51a66bcdb1af0d5"
 "dat_version","main.tex","computed","0.1.0","0.1.0","0.1.0","text","PASS","","inst/scripts/results/data/run_log_main.csv","x$onestepcox[1]","214a644faea51c6d2fd3f3265c6e21f6"
+"tp_version","title_page.tex","computed","0.1.0","0.1.0","0.1.0","text","PASS","","inst/scripts/results/data/run_log_main.csv","x$onestepcox[1]","214a644faea51c6d2fd3f3265c6e21f6"

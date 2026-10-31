@@ -96,3 +96,4 @@ dis_s20,main.tex,with 20 strata of about ten subjects each,20,,length(gridB_sett
 dis_n30,main.tex,"With 30 or 60 subjects, the Wald",30,,min(gridC_scenarios()$n),int,input
 dis_n60,main.tex,"With 30 or 60 subjects, the Wald",60,,max(gridC_scenarios()$n),int,input
 dat_version,main.tex,(version 0.1.0) at,0.1.0,inst/scripts/results/data/run_log_main.csv,x$onestepcox[1],text,computed
+tp_version,title_page.tex,(version 0.1.0) at,0.1.0,inst/scripts/results/data/run_log_main.csv,x$onestepcox[1],text,computed

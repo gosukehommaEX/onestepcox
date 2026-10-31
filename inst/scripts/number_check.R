@@ -1,10 +1,12 @@
 # Check the numbers of the article against the results of the scripts.
 #
 # The ledger inst/scripts/number_locations.csv (UTF-8) has one row per number
-# written in the main text, the Supporting Information, or the cover letter,
+# written in the main text, the Supporting Information, the cover letter, or
+# the title page,
 # with the columns
 #   id           unique identifier
-#   file         main.tex, supporting_information.tex, or cover_letter.tex
+#   file         main.tex, supporting_information.tex, cover_letter.tex, or
+#                title_page.tex
 #   anchor       text of the .tex around the number, found exactly once
 #   text_value   the number as written in the text
 #   source_file  .rds or .csv file of the results, relative to the root of

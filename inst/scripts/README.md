@@ -132,11 +132,11 @@ need pdflscape.
 
 ## Numbers of the article and copies to the manuscript
 
-Every number written in the main text, the Supporting Information, or the
-cover letter is entered in the ledger `number_locations.csv` before it is
+Every number written in the main text, the Supporting Information, the cover
+letter, or the title page is entered in the ledger `number_locations.csv` before it is
 written. The ledger is a UTF-8 file, edited as text (Excel's plain CSV is in
 another encoding). Its columns are `id`, `file` (`main.tex`,
-`supporting_information.tex`, or `cover_letter.tex`), `anchor` (text of the
+`supporting_information.tex`, `cover_letter.tex`, or `title_page.tex`), `anchor` (text of the
 .tex around the number, found exactly once; avoid `\"` in it), `text_value`
 (the number as written), `source_file` (an .rds or .csv file of the results,
 relative to the root of the package), `source_expr` (one R expression),
