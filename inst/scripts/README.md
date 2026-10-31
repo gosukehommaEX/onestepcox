@@ -103,13 +103,13 @@ Main text (`inst/scripts/results/`):
 | `data/fixed.rds`, `local.rds` | Lists with `scenarios`, `estimates` (every replicate and method, unchanged), and `summary` (the columns of the summary of `CompareOC()` against `Cox_NR`, with `nsim`, `n_undefined`, and `n_warning`) |
 | `data/gridA.rds`, `gridB.rds` | Lists with `scenarios` and `summary` (as above, with `HR_true`; attribute `nsim`) |
 | `data/application.rds`, `application.csv` | Estimates of the applications (the CSV with 17 significant digits) |
-| `data/fig4_envelope.rds` | Constants of the dashed lines of Figure 4 |
+| `data/fig4_envelope.rds` | Bounds drawn as the dashed lines of Figure 4 (`bounds`), and the numbers of one-step estimates of the replicates of `fixed` and `local` above them by more than the rounding tolerance 4e-15 max(1, \|log HR of Cox\|) (`check`; none are expected; replicates without a finite estimate, and for the Halley step those with an anchor error of at least log 3, are not checked) |
 | `tables/table1_operating.tex` | Table 1: coverage and bias, n_T = n_C = 100 |
 | `tables/table2_application.tex` | Table 2: applications, Efron |
 | `figures/Fig1.pdf`, `.eps` | Large-sample bias of the Pike-anchored and closed-form estimators against the hazard ratio; absolute biases below 1e-10 (near HR 1, at the accuracy of the numerical integration) are not drawn |
 | `figures/Fig2.pdf`, `.eps` | Deviation from the Cox estimate against n (median and 99th percentile; dotted lines: large-sample limits of the Pike-anchored estimators) |
 | `figures/Fig3.pdf`, `.eps` | The deviation divided by the standard error of the Cox estimate |
-| `figures/Fig4.pdf`, `.eps` | Error after one Newton or Halley step against the error of the anchor; in each scenario 200 random replicates and the 20 with the largest anchor errors are drawn; dashed lines: K e^2 and K e^3 with K the largest ratio over all replicates with an anchor error of at least 1e-3 (below it the error after one step is near the rounding error) |
+| `figures/Fig4.pdf`, `.eps` | Error after one Newton or Halley step against the error of the anchor; in each scenario 200 random replicates and the 20 with the largest anchor errors are drawn; dashed lines: the bounds of Theorem 1 of the article, K_N(e) e^2 with K_N(x) = (3 + x exp(x)) / 6 for the Newton step and K_H(e) e^3 with K_H(x) = (2 + 3 x exp(x)) / (6 (3 - exp(x))) for the Halley step, where e is the absolute error of the anchor (the Halley bound holds for e < log 3); the lines are drawn for e up to 1 and down to where the bound reaches 4e-15, below which the points lie at the rounding error |
 
 Supporting Information (`inst/sup_info/results/`):
 

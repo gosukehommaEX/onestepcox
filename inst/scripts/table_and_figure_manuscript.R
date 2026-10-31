@@ -81,34 +81,57 @@ pts <- pts[is.finite(pts$e) & is.finite(pts$err), ]
 pts$e <- pmax(pts$e, floor_value)
 pts$err <- pmax(pts$err, floor_value)
 pts$step <- factor(pts$step, levels = step_levels)
-# Dashed lines K |e|^p (p = 2 for Newton, 3 for Halley), with K the largest
-# ratio |one-step - Cox| / |e|^p over all replicates with |e| >= 1e-3. With
-# smaller anchor errors the error after one step is near the rounding error,
-# and the ratio would reflect the rounding rather than the step.
-e_min <- 1e-3
-envelope <- do.call(rbind, lapply(c("Newton", "Halley"), function(s) {
-  p <- if (s == "Newton") 2 else 3
-  e_all <- c(abs(wide$MH - wide$cox), abs(wide$Pike - wide$cox))
-  err_all <- c(abs(wide[[paste0("MH_", s)]] - wide$cox),
-               abs(wide[[paste0("Pike_", s)]] - wide$cox))
-  ok <- is.finite(e_all) & is.finite(err_all) & e_all >= e_min
-  if (!any(ok)) return(NULL)
-  ratio <- err_all[ok] / e_all[ok]^p
+# Dashed lines: the bounds of Theorem 1 of the article, which hold for every
+# dataset, K_N(|e|) e^2 after a Newton step and K_H(|e|) |e|^3 after a Halley
+# step (the latter for |e| < log 3), with K_N(x) = (3 + x e^x) / 6 and
+# K_H(x) = (2 + 3 x e^x) / (6 (3 - e^x)). They are drawn for |e| up to 1 and
+# down to where they reach the rounding tolerance round_tol of the estimates
+# (4e-15 on the log scale); below it, the points lie at the rounding error
+# rather than under the bound.
+bound_K <- list(
+  Newton = function(x) (3 + x * exp(x)) / 6,
+  Halley = function(x) (2 + 3 * x * exp(x)) / (6 * (3 - exp(x)))
+)
+bound_power <- c(Newton = 2, Halley = 3)
+round_tol <- 4e-15
+bounds <- do.call(rbind, lapply(c("Newton", "Halley"), function(s) {
+  p <- bound_power[[s]]
+  lo <- max(min(pts$e), (round_tol / bound_K[[s]](0))^(1 / p))
+  hi <- min(max(pts$e), 1)
+  e <- 10^seq(log10(lo), log10(hi), length.out = 200L)
   data.frame(step = factor(paste0(s, " step"), levels = step_levels),
-             power = p, K = max(ratio), n_used = sum(ok),
-             slope = p, intercept = log10(max(ratio)))
+             e = e, bound = bound_K[[s]](e) * e^p)
 }))
+# Check over all replicates (not only those drawn): the numbers of one-step
+# estimates above the bound by more than the rounding tolerance
+# round_tol max(1, |Cox|); none are expected. Replicates without a finite
+# estimate, and for the Halley step those with |e| >= log 3, are not checked
+# (n_checked is the number checked)
+bound_check <- do.call(rbind, lapply(c("Newton", "Halley"), function(s) {
+  p <- bound_power[[s]]
+  do.call(rbind, lapply(c("MH", "Pike"), function(a) {
+    e <- abs(wide[[a]] - wide$cox)
+    err <- abs(wide[[paste0(a, "_", s)]] - wide$cox)
+    ok <- is.finite(e) & is.finite(err) & (s == "Newton" | e < log(3))
+    above <- err[ok] > bound_K[[s]](e[ok]) * e[ok]^p +
+      round_tol * pmax(1, abs(wide$cox[ok]))
+    data.frame(step = s, anchor = a, n_checked = sum(ok),
+               n_above = sum(above), stringsAsFactors = FALSE)
+  }))
+}))
+if (any(bound_check$n_above > 0L)) {
+  warning("one-step estimates above the bounds of Theorem 1: ",
+          paste(bound_check$anchor, bound_check$step, bound_check$n_above,
+                collapse = "; "))
+}
 p4 <- ggplot2::ggplot(pts, ggplot2::aes(x = .data$e, y = .data$err,
                                         colour = .data$anchor,
                                         shape = .data$anchor)) +
-  ggplot2::geom_point(size = 0.4)
-if (!is.null(envelope)) {
-  p4 <- p4 + ggplot2::geom_abline(
-    data = envelope,
-    mapping = ggplot2::aes(slope = .data$slope, intercept = .data$intercept),
-    linetype = "dashed", colour = "grey30", linewidth = 0.4
-  )
-}
+  ggplot2::geom_point(size = 0.4) +
+  ggplot2::geom_line(data = bounds,
+                     mapping = ggplot2::aes(x = .data$e, y = .data$bound),
+                     inherit.aes = FALSE, linetype = "dashed",
+                     colour = "grey30", linewidth = 0.4)
 p4 <- p4 +
   ggplot2::facet_wrap(~ step, ncol = 2) +
   ggplot2::scale_x_log10() +
@@ -122,7 +145,8 @@ p4 <- p4 +
   onestepcox:::plot_legend("bottom", k = 2,
                            aesthetics = c("colour", "shape"))
 save_figure(p4, fig_dir, "Fig4", height_mm = 80)
-saveRDS(envelope, file.path(data_dir, "fig4_envelope.rds"))
+saveRDS(list(bounds = bounds, check = bound_check),
+        file.path(data_dir, "fig4_envelope.rds"))
 
 # Table 1: coverage and bias, n_T = n_C = 100 ----------------------------
 nsim_grid <- attr(gridA$summary, "nsim")

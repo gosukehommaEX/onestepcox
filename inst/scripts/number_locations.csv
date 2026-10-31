@@ -1,1 +1,98 @@
 id,file,anchor,text_value,source_file,source_expr,rounding,type
+abs_n_max,main.tex,"In simulations with up to 100,000 subjects","100,000",,max(n_growth),int,input
+abs_hr_min,main.tex,"hazard ratios from 0.1 to 10, the distance",0.1,,min(theta_fixed),signif:1,input
+abs_hr_max,main.tex,"hazard ratios from 0.1 to 10, the distance",10,,max(theta_fixed),int,input
+intro_n_max,main.tex,"reports simulations with up to 100,000 subjects","100,000",,max(n_growth),int,input
+sw_version,main.tex,"\texttt{onestepcox}, version 0.1.0, which",0.1.0,inst/scripts/results/data/run_log_main.csv,x$onestepcox[1],text,computed
+des_hazard,main.tex,$\log(2)/18$ per month,18,,log(2) / hazard_C,int,input
+des_accrual,main.tex,uniform accrual over 12 months,12,,accrual,int,input
+des_event_frac,main.tex,with $E$ equal to 0.4 times,0.4,,event_frac,fixed:1,input
+des_hr_fixed,main.tex,"the hazard ratio was 0.1, 0.2, 0.5, 2, 5, or 10, with equal","0.1, 0.2, 0.5, 2, 5, or 10",,"paste0(paste(theta_fixed[-length(theta_fixed)], collapse = "", ""), "", or "", theta_fixed[length(theta_fixed)])",text,input
+des_n_min,main.tex,"$n$ from 100 to 100,000. Under",100,,min(n_growth),int,input
+des_n_max,main.tex,"$n$ from 100 to 100,000. Under","100,000",,max(n_growth),int,input
+des_local_lo,main.tex,hazard ratios of 0.5 and 2 when $n$ is 100,0.5,,exp(c_local[1] / sqrt(min(n_growth))),signif:1,input
+des_local_hi,main.tex,hazard ratios of 0.5 and 2 when $n$ is 100,2,,exp(c_local[2] / sqrt(min(n_growth))),signif:1,input
+des_local_n,main.tex,hazard ratios of 0.5 and 2 when $n$ is 100,100,,min(n_growth),int,input
+des_gridA_lo,main.tex,the hazard ratio from 0.2 to 5. Grid B,0.2,,min(gridA_scenarios()$HR),signif:1,input
+des_gridA_hi,main.tex,the hazard ratio from 0.2 to 5. Grid B,5,,max(gridA_scenarios()$HR),int,input
+des_gridB_n,main.tex,Grid B had 100 subjects in each group,100,,unique(gridB_scenarios()$n_T),int,input
+des_gridB_s2,main.tex,either 2 or 20 strata,2,,length(gridB_settings$B3$strata_prop),int,input
+des_gridB_s20,main.tex,either 2 or 20 strata,20,,length(gridB_settings$B4$strata_prop),int,input
+des_gridC_n_lo,main.tex,Grid C had 30 or 60 subjects,30,,min(gridC_scenarios()$n),int,input
+des_gridC_n_hi,main.tex,Grid C had 30 or 60 subjects,60,,max(gridC_scenarios()$n),int,input
+des_gridC_hr_lo,main.tex,and hazard ratios from 0.1 to 10. Each scenario,0.1,,min(gridC_scenarios()$HR),signif:1,input
+des_gridC_hr_hi,main.tex,and hazard ratios from 0.1 to 10. Each scenario,10,,max(gridC_scenarios()$HR),int,input
+des_nsim_grid,main.tex,"the grids had 10,000 replicates","10,000",,n_rep(10000L),int,input
+des_nsim_lo,main.tex,"alternatives between 100 and 1,000.",100,,"min(vapply(n_growth, nsim_growth, integer(1)))",int,input
+des_nsim_hi,main.tex,"alternatives between 100 and 1,000.","1,000",,"max(vapply(n_growth, nsim_growth, integer(1)))",int,input
+des_coxph_n,main.tex,"and with 100,000 subjects its estimate differed","100,000",,max(n_growth),int,input
+des_coxph_dev,main.tex,by up to $2.5 \times 10^{-6}$,2.5 \times 10^{-6},inst/scripts/results/data/fixed.rds,"with(x$summary, max(dev_max[method == ""Cox"" & endsWith(label, ""_n100000"")]))",sci:1,computed
+lim_pike10,main.tex,reaches $-0.20$ when the hazard ratio is 10,-0.20,inst/scripts/results/data/limit.rds,"with(x$fixed, bias[method == ""Pike"" & abs(HR - 10) < 1e-9])",fixed:2,computed
+lim_pike10_hr,main.tex,reaches $-0.20$ when the hazard ratio is 10,10,,max(theta_fixed),int,input
+lim_peto01,main.tex,Peto estimator reaches 0.30 when it is 0.1,0.30,inst/scripts/results/data/limit.rds,"with(x$fixed, bias[method == ""Peto"" & abs(HR - 0.1) < 1e-9])",fixed:2,computed
+lim_peto01_hr,main.tex,Peto estimator reaches 0.30 when it is 0.1,0.1,,min(theta_fixed),signif:1,input
+lim_pn10_hr,main.tex,the bias at the hazard ratio 10 to $-9.8 \times 10^{-3}$,10,,max(theta_fixed),int,input
+lim_pn10,main.tex,the bias at the hazard ratio 10 to $-9.8 \times 10^{-3}$,-9.8 \times 10^{-3},inst/scripts/results/data/limit.rds,"with(x$fixed, bias[method == ""Pike_Newton"" & abs(HR - 10) < 1e-9])",sci:1,computed
+lim_ph10,main.tex,one Halley step to $-5.1 \times 10^{-4}$,-5.1 \times 10^{-4},inst/scripts/results/data/limit.rds,"with(x$fixed, bias[method == ""Pike_Halley"" & abs(HR - 10) < 1e-9])",sci:1,computed
+agr_n,main.tex,"With 100,000 subjects and the hazard ratio 10, the","100,000",,max(n_growth),int,input
+agr_hr,main.tex,"With 100,000 subjects and the hazard ratio 10, the",10,,max(theta_fixed),int,input
+agr_mhh_q99,main.tex,estimator was $6.4 \times 10^{-8}$,6.4 \times 10^{-8},inst/scripts/results/data/fixed.rds,"with(x$summary, dev_q99[method == ""MH_Halley"" & label == ""fixed_HR10_n100000""])",sci:1,computed
+agr_hr2,main.tex,"At the hazard ratio 10, for example",10,,max(theta_fixed),int,input
+agr_ph_lo,main.tex,stayed between $4.9 \times 10^{-4}$ and $5.8 \times 10^{-4}$,4.9 \times 10^{-4},inst/scripts/results/data/fixed.rds,"with(x$summary, min(dev_median[method == ""Pike_Halley"" & startsWith(label, ""fixed_HR10_"")]))",sci:1,computed
+agr_ph_hi,main.tex,stayed between $4.9 \times 10^{-4}$ and $5.8 \times 10^{-4}$,5.8 \times 10^{-4},inst/scripts/results/data/fixed.rds,"with(x$summary, max(dev_median[method == ""Pike_Halley"" & startsWith(label, ""fixed_HR10_"")]))",sci:1,computed
+agr_local_n,main.tex,"reached the level of rounding error with 10,000 subjects","10,000",,n_growth[n_growth == 1e4],int,input
+agr_se_q99,main.tex,was below $10^{-4}$ for every hazard ratio,10^{-4},inst/scripts/results/data/fixed.rds,"with(x$summary, max(devse_q99[method == ""MH_Halley"" & as.numeric(sub("".*_n"", """", label)) >= 1e4]))",order,computed
+agr_se_n,main.tex,"once $n$ reached 10,000","10,000",,n_growth[n_growth == 1e4],int,input
+agr_pike_n,main.tex,"and with 100,000 subjects and the hazard ratio 10 the median","100,000",,max(n_growth),int,input
+agr_pike_hr,main.tex,"and with 100,000 subjects and the hazard ratio 10 the median",10,,max(theta_fixed),int,input
+agr_pike_se,main.tex,the median distance was about 15 standard errors,15,inst/scripts/results/data/fixed.rds,"with(x$summary, devse_median[method == ""Pike"" & label == ""fixed_HR10_n100000""])",approx:2,computed
+agr_ph_se,main.tex,it was $3.8 \times 10^{-2}$ standard errors,3.8 \times 10^{-2},inst/scripts/results/data/fixed.rds,"with(x$summary, devse_median[method == ""Pike_Halley"" & label == ""fixed_HR10_n100000""])",sci:1,computed
+one_n,main.tex,occurred with 100 subjects and the most extreme,100,,min(n_growth),int,input
+one_anchor_max,main.tex,the error of the anchor reached 1.1 and,1.1,inst/scripts/results/data/fixed.rds,"{e <- x$estimates; r <- e[e$method == ""Cox_NR"", ]; m <- e[e$method %in% c(""MH"", ""Pike""), ]; ref <- r$coef[match(paste(m$label, m$rep), paste(r$label, r$rep))]; max(abs(m$coef - ref), na.rm = TRUE)}",signif:2,computed
+one_mhh_max,main.tex,that of the MH-Halley estimator $9.7 \times 10^{-2}$,9.7 \times 10^{-2},inst/scripts/results/data/fixed.rds,"with(x$summary, max(dev_max[method == ""MH_Halley""]))",sci:1,computed
+tru_n,main.tex,ratio with 100 subjects in each group,100,,unique(gridB_scenarios()$n_C),int,input
+tru_cov_A,main.tex,by at most 0.01 percentage points and the bias,0.01,inst/scripts/results/data/gridA.rds,"{s <- x$summary; d <- merge(s[s$method == ""Cox"", c(""label"", ""coverage"")], s[s$method == ""MH_Halley"", c(""label"", ""coverage"")], by = ""label""); max(abs(d$coverage.x - d$coverage.y))}",pct:2,computed
+tru_cov_B,main.tex,by at most 0.01 percentage points and the bias,0.01,inst/scripts/results/data/gridB.rds,"{s <- x$summary; d <- merge(s[s$method == ""Cox"", c(""label"", ""coverage"")], s[s$method == ""MH_Halley"", c(""label"", ""coverage"")], by = ""label""); max(abs(d$coverage.x - d$coverage.y))}",pct:2,computed
+tru_bias_A,main.tex,the bias by at most $1.7 \times 10^{-4}$,1.7 \times 10^{-4},inst/scripts/results/data/gridA.rds,"{s <- x$summary; d <- merge(s[s$method == ""Cox"", c(""label"", ""bias"")], s[s$method == ""MH_Halley"", c(""label"", ""bias"")], by = ""label""); max(abs(d$bias.x - d$bias.y))}",sci:1,computed
+tru_cov_Bbres,main.tex,the coverage differed by at most 0.02 percentage points,0.02,inst/sup_info/results/data/gridB_breslow.rds,"{s <- x$summary; d <- merge(s[s$method == ""Cox"", c(""label"", ""coverage"")], s[s$method == ""MH_Halley"", c(""label"", ""coverage"")], by = ""label""); max(abs(d$coverage.x - d$coverage.y))}",pct:2,computed
+tru_s20,main.tex,"With 20 strata, the Pike estimator",20,,length(gridB_settings$B4$strata_prop),int,input
+tru_hr5,main.tex,covered the hazard ratio 5 in 57.9\%,5,,max(gridB_scenarios()$HR),int,input
+tru_pike_cov,main.tex,covered the hazard ratio 5 in 57.9\%,57.9,inst/scripts/results/data/gridB.rds,"with(x$summary, coverage[method == ""Pike"" & label == ""B4_HR5""])",pct:1,computed
+tru_nC300,main.tex,With 300 control subjects,300,,max(gridA_scenarios()$n_C),int,input
+tru_hr5b,main.tex,"and the hazard ratio 5, the Peto interval covered it in 2.9\%",5,,max(gridA_scenarios()$HR),int,input
+tru_peto_cov,main.tex,"and the hazard ratio 5, the Peto interval covered it in 2.9\%",2.9,inst/scripts/results/data/gridA.rds,"with(x$summary, coverage[method == ""Peto"" & label == ""A_nC300_r2_HR5""])",pct:1,computed
+sma_undef,main.tex,up to 35.0\% of the replicates,35.0,inst/sup_info/results/data/gridC.rds,"with(x$summary, max(n_undefined[method == ""Cox""]) / attr(x$summary, ""nsim""))",pct:1,computed
+sma_n30,main.tex,"in the scenario with 30 subjects, unequal",30,,min(gridC_scenarios()$n),int,input
+sma_hr10,main.tex,"unequal allocation, and the hazard ratio 10. In",10,,max(gridC_scenarios()$HR),int,input
+sma_max,main.tex,estimate was 0.23 on the log scale,0.23,inst/sup_info/results/data/gridC.rds,"with(x$summary, max(dev_max[method == ""MH_Halley""]))",fixed:2,computed
+sma_q99,main.tex,was at most 0.085 in every scenario,0.085,inst/sup_info/results/data/gridC.rds,"with(x$summary, max(dev_q99[method == ""MH_Halley""]))",fixed:3,computed
+sma_cov,main.tex,"by at most 0.12 percentage points, and both",0.12,inst/sup_info/results/data/gridC.rds,"{s <- x$summary; d <- merge(s[s$method == ""Cox"", c(""label"", ""coverage"")], s[s$method == ""MH_Halley"", c(""label"", ""coverage"")], by = ""label""); max(abs(d$coverage.x - d$coverage.y))}",pct:2,computed
+sma_cov_lo,main.tex,had coverage between 93.8\% and 97.0\%,93.8,inst/sup_info/results/data/gridC.rds,"with(x$summary, min(coverage[method %in% c(""Cox"", ""MH_Halley"")]))",pct:1,computed
+sma_cov_hi,main.tex,had coverage between 93.8\% and 97.0\%,97.0,inst/sup_info/results/data/gridC.rds,"with(x$summary, max(coverage[method %in% c(""Cox"", ""MH_Halley"")]))",pct:1,computed
+tim_n,main.tex,"single datasets with up to 20,000 subjects","20,000",inst/sup_info/results/data/timing.rds,max(x$times$n),int,computed
+tim_nr_lo,main.tex,with ratios of the times between 0.84 and 1.04,0.84,inst/sup_info/results/data/timing.rds,"{t <- x$times; min(t$median_us[t$expr == ""EstHR_MH_Halley""] / t$median_us[t$expr == ""EstHR_Cox_NR""])}",fixed:2,computed
+tim_nr_hi,main.tex,with ratios of the times between 0.84 and 1.04,1.04,inst/sup_info/results/data/timing.rds,"{t <- x$times; max(t$median_us[t$expr == ""EstHR_MH_Halley""] / t$median_us[t$expr == ""EstHR_Cox_NR""])}",fixed:2,computed
+tim_cox_lo,main.tex,took between 7.0 and 9.1 times as long,7.0,inst/sup_info/results/data/timing.rds,"{t <- x$times; min(t$median_us[t$expr == ""EstHR_Cox""] / t$median_us[t$expr == ""EstHR_MH_Halley""])}",fixed:1,computed
+tim_cox_hi,main.tex,took between 7.0 and 9.1 times as long,9.1,inst/sup_info/results/data/timing.rds,"{t <- x$times; max(t$median_us[t$expr == ""EstHR_Cox""] / t$median_us[t$expr == ""EstHR_MH_Halley""])}",fixed:1,computed
+app_gbsg_nT,main.tex,hormonal therapy (246 patients),246,inst/scripts/results/data/application.csv,"x$n_T[x$analysis == ""gbsg""][1]",int,computed
+app_gbsg_nC,main.tex,no hormonal therapy (440 patients),440,inst/scripts/results/data/application.csv,"x$n_C[x$analysis == ""gbsg""][1]",int,computed
+app_gbsg_ev,main.tex,with 299 events. The,299,inst/scripts/results/data/application.csv,"{y <- x[x$analysis == ""gbsg"", ][1, ]; y$events_T + y$events_C}",int,computed
+app_ph_nT,main.tex,with 61 patients in the combination group,61,inst/scripts/results/data/application.csv,"x$n_T[x$analysis == ""pharmacoSmoking""][1]",int,computed
+app_ph_nC,main.tex,64 in the patch group,64,inst/scripts/results/data/application.csv,"x$n_C[x$analysis == ""pharmacoSmoking""][1]",int,computed
+app_ph_ev,main.tex,and 89 relapses,89,inst/scripts/results/data/application.csv,"{y <- x[x$analysis == ""pharmacoSmoking"", ][1, ]; y$events_T + y$events_C}",int,computed
+app_ph_tied,main.tex,of which 69 occurred on days,69,inst/scripts/results/data/application.csv,"x$tied_events[x$analysis == ""pharmacoSmoking""][1]",int,computed
+app_gbsg_strata,main.tex,by tumor grade (3 strata),3,inst/scripts/results/data/application.csv,"x$n_strata[x$analysis == ""gbsg_grade""][1]",int,computed
+app_ph_strata,main.tex,by age group (2 strata),2,inst/scripts/results/data/application.csv,"x$n_strata[x$analysis == ""pharmacoSmoking_ageGroup2""][1]",int,computed
+app_mhh_lo,main.tex,by between $4.2 \times 10^{-12}$ and $1.7 \times 10^{-8}$ on the log scale,4.2 \times 10^{-12},inst/scripts/results/data/application.csv,"{e <- x[x$ties == ""efron"", ]; cox <- e$coef[e$method == ""Cox""]; d <- abs(e$coef - cox[match(e$analysis, e$analysis[e$method == ""Cox""])]); min(d[e$method %in% c(""MH_Halley"")])}",sci:1,computed
+app_mhh_hi,main.tex,by between $4.2 \times 10^{-12}$ and $1.7 \times 10^{-8}$ on the log scale,1.7 \times 10^{-8},inst/scripts/results/data/application.csv,"{e <- x[x$ties == ""efron"", ]; cox <- e$coef[e$method == ""Cox""]; d <- abs(e$coef - cox[match(e$analysis, e$analysis[e$method == ""Cox""])]); max(d[e$method %in% c(""MH_Halley"")])}",sci:1,computed
+app_cf_lo,main.tex,"by between $3.7 \times 10^{-4}$ and $1.9 \times 10^{-2}$, which",3.7 \times 10^{-4},inst/scripts/results/data/application.csv,"{e <- x[x$ties == ""efron"", ]; cox <- e$coef[e$method == ""Cox""]; d <- abs(e$coef - cox[match(e$analysis, e$analysis[e$method == ""Cox""])]); min(d[e$method %in% c(""MH"", ""Pike"", ""Peto"")])}",sci:1,computed
+app_cf_hi,main.tex,"by between $3.7 \times 10^{-4}$ and $1.9 \times 10^{-2}$, which",1.9 \times 10^{-2},inst/scripts/results/data/application.csv,"{e <- x[x$ties == ""efron"", ]; cox <- e$coef[e$method == ""Cox""]; d <- abs(e$coef - cox[match(e$analysis, e$analysis[e$method == ""Cox""])]); max(d[e$method %in% c(""MH"", ""Pike"", ""Peto"")])}",sci:1,computed
+app_peto,main.tex,the Peto estimate was 0.707 against 0.695,0.707,inst/scripts/results/data/application.csv,"x$HR[x$analysis == ""gbsg"" & x$ties == ""efron"" & x$method == ""Peto""]",fixed:3,computed
+app_cox,main.tex,the Peto estimate was 0.707 against 0.695,0.695,inst/scripts/results/data/application.csv,"x$HR[x$analysis == ""gbsg"" & x$ties == ""efron"" & x$method == ""Cox""]",fixed:3,computed
+app_ph_efron,main.tex,"without strata from 0.546 to 0.553, far",0.546,inst/scripts/results/data/application.csv,"x$HR[x$analysis == ""pharmacoSmoking"" & x$ties == ""efron"" & x$method == ""Cox""]",fixed:3,computed
+app_ph_breslow,main.tex,"without strata from 0.546 to 0.553, far",0.553,inst/scripts/results/data/application.csv,"x$HR[x$analysis == ""pharmacoSmoking"" & x$ties == ""breslow"" & x$method == ""Cox""]",fixed:3,computed
+dis_n100,main.tex,"of the fixed alternatives, with 100 subjects. The",100,,min(n_growth),int,input
+dis_s20,main.tex,with 20 strata of about ten subjects each,20,,length(gridB_settings$B4$strata_prop),int,input
+dis_n30,main.tex,"With 30 or 60 subjects, the Wald",30,,min(gridC_scenarios()$n),int,input
+dis_n60,main.tex,"With 30 or 60 subjects, the Wald",60,,max(gridC_scenarios()$n),int,input
+dat_version,main.tex,(version 0.1.0) at,0.1.0,inst/scripts/results/data/run_log_main.csv,x$onestepcox[1],text,computed
