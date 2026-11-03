@@ -62,7 +62,7 @@ methods_all <- c(methods, reference)
 # the seeds of different sections never coincide.
 seeds <- c(fixed = 100001L, local = 200001L, gridA = 300001L,
            gridB = 400001L, gridB_breslow = 450001L, gridC = 500001L,
-           timing = 600001L)
+           timing = 600001L, grouped = 700001L)
 
 # Growth of n under fixed and local alternatives (Figures 2 to 4), 1:1
 n_growth <- c(100, 300, 1000, 3000, 1e4, 3e4, 1e5)

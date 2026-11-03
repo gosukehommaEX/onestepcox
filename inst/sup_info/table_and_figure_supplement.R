@@ -1,5 +1,6 @@
 # Tables and figures of the Supporting Information, made from the results
-# saved by inst/sup_info/data_generate_supplement.R and
+# saved by inst/sup_info/data_generate_supplement.R,
+# inst/sup_info/data_generate_grouped.R, and
 # inst/scripts/data_generate_main.R (no simulation is run here), and from the
 # summary of the reproduction and validation scripts
 # (inst/validation/results/summary.csv).
@@ -33,6 +34,7 @@ limit_sup <- read_sup("limit_sup.rds")
 gridB_breslow <- read_sup("gridB_breslow.rds")
 gridC <- read_sup("gridC.rds")
 timing <- read_sup("timing.rds")
+grouped <- read_sup("grouped.rds")
 validation <- utils::read.csv(file.path("inst", "validation", "results",
                                         "summary.csv"),
                               stringsAsFactors = FALSE)
@@ -171,16 +173,25 @@ oc_body <- function(s, sc, describe) {
              fmt_pct(r$mismatch_2dp, 2), " \\\\"))
   }))
 }
+dev_note <- paste0(
+  "$|\\hat{\\eta} - \\hat{\\eta}_{\\mathrm{Cox}}|$: absolute ",
+  "difference from the root of the score (for Cox, the difference of ",
+  "\\texttt{survival::coxph()} from it)"
+)
+mismatch_note <- paste0(
+  "mismatch: percentage of replicates in which the hazard ratio written ",
+  "with two decimals differs from that of the Cox estimate"
+)
+pike_chebyshev_note <- paste0(
+  "Pike-Chebyshev: the step of Chebyshev's method from the Pike anchor, ",
+  "which the function \\texttt{coxph\\_fast()} of the \\texttt{R} package ",
+  "\\texttt{FastSurvival} computes under the name Pike-Halley estimator."
+)
 oc_note <- paste0(
   "Bias, SD, and RMSE of the estimate of the log hazard ratio; ",
   "$\\overline{\\mathrm{SE}}/\\mathrm{SD}$: mean standard error divided ",
   "by the standard deviation of the estimates; coverage of the 95\\% Wald ",
-  "interval; $|\\hat{\\eta} - \\hat{\\eta}_{\\mathrm{Cox}}|$: absolute ",
-  "difference from the root of the score (for Cox, the difference of ",
-  "\\texttt{survival::coxph()} from it); mismatch: percentage of ",
-  "replicates in which the hazard ratio written with two decimals differs ",
-  "from that of the Cox estimate. Pike-Chebyshev is the estimator of an ",
-  "earlier version of this work."
+  "interval; ", dev_note, "; ", mismatch_note, ". ", pike_chebyshev_note
 )
 describe_A <- function(x) {
   paste0("$n_T = ", x$n_T, "$, $n_C = ", x$n_C, "$, $E = ", x$E,
@@ -242,7 +253,9 @@ tabS4 <- longtable_lines(
     " & & & (\\%) & Median & 99th pct. & Max & (\\%) \\\\"),
   c_body,
   paste0("No estimate: replicates without an estimate of the method among ",
-         "those with a finite Cox estimate. ", oc_note),
+         "those with a finite Cox estimate; bias of the estimate of the log ",
+         "hazard ratio; coverage of the 95\\% Wald interval; ", dev_note,
+         "; ", mismatch_note, ". ", pike_chebyshev_note),
   landscape = TRUE
 )
 writeLines(tabS4, file.path(tab_dir, "tableS4_gridC.tex"))
@@ -391,5 +404,79 @@ tabS7 <- c(
   "\\end{table}"
 )
 writeLines(tabS7, file.path(tab_dir, "tableS7_validation.tex"))
+
+# Table S8: grouped event times (design of grid B2) -------------------------
+gl <- grouped$limits
+gs8 <- grouped$simulation
+# Differences below 1e-14 in absolute value are at the level of rounding
+fmt_diff <- function(v) ifelse(abs(v) < 1e-14, "$< 10^{-14}$", fmt_sci(v))
+s8_lim <- paste0(
+  "$", gl$theta, "$ & ", fmt_sci(gl$mh - log(gl$theta)), " & ",
+  fmt_sci(gl$cox_efron - log(gl$theta)), " & ",
+  fmt_sci(gl$cox_breslow - log(gl$theta)), " & ", fmt_diff(gl$diff_efron),
+  " & ", fmt_diff(gl$diff_breslow), " \\\\"
+)
+s8_n <- sort(unique(gs8$n))
+s8_sim <- vapply(s8_n, function(n) {
+  e <- gs8[gs8$n == n & gs8$ties == "efron", ]
+  b <- gs8[gs8$n == n & gs8$ties == "breslow", ]
+  paste0(fmt_int(n), " & ", fmt_int(e$nsim), " & ", fmt_sci(e$mh_mean),
+         " & ", fmt_sci(e$halley_median_abs), " & ", fmt_sci(b$mh_mean),
+         " & ", fmt_sci(b$halley_median_abs), " \\\\")
+}, character(1))
+# The same datasets for both approximations: count each replicate once
+s8_undefined <- sum(gs8$n_undefined[gs8$ties == "efron"])
+s8_undefined_text <- if (s8_undefined == 0L) {
+  "every replicate had a finite Cox estimate"
+} else {
+  paste0(fmt_int(s8_undefined), " replicates without a finite Cox estimate ",
+         "are left out")
+}
+tabS8 <- c(
+  "\\begin{table}",
+  paste0("\\caption{Event times rounded up to whole months in the design ",
+         "of grid B2 (1:1 allocation, no dropout, no strata): (a) ",
+         "large-sample limits and (b) simulations with the hazard ratio ",
+         fmt_list(unique(gs8$HR)), "}"),
+  "\\label{tab:grouped}",
+  "\\centering",
+  "\\footnotesize",
+  "\\begin{tabular}{rrrrrr}",
+  "\\toprule",
+  "\\multicolumn{6}{l}{(a) Large-sample limits} \\\\",
+  "\\midrule",
+  paste0("$\\theta$ & MH & Cox, Efron & Cox, Breslow & ",
+         "\\multicolumn{2}{c}{MH-Halley $-$ Cox} \\\\"),
+  "\\cmidrule(lr){5-6}",
+  " & & & & Efron & Breslow \\\\",
+  "\\midrule",
+  s8_lim,
+  "\\midrule",
+  "\\multicolumn{6}{l}{(b) Simulations} \\\\",
+  "\\midrule",
+  paste0("$n_T + n_C$ & Replicates & \\multicolumn{2}{c}{Efron} & ",
+         "\\multicolumn{2}{c}{Breslow} \\\\"),
+  "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}",
+  paste0(" & & Mean $d_{\\mathrm{MH}}$ & Median $|d_{\\mathrm{H}}|$ & ",
+         "Mean $d_{\\mathrm{MH}}$ & Median $|d_{\\mathrm{H}}|$ \\\\"),
+  "\\midrule",
+  s8_sim,
+  "\\bottomrule",
+  "\\end{tabular}",
+  "\\par\\smallskip",
+  paste0("{\\footnotesize (a) Limits of the Mantel--Haenszel (MH) and Cox ",
+         "estimators of the log hazard ratio minus $\\log \\theta$, ",
+         "computed from the limits of the numbers at risk and of events in ",
+         "each month, and the limit of the MH-Halley estimator minus that of ",
+         "the Cox estimator with the same approximation for ties; ",
+         "$< 10^{-14}$: below $10^{-14}$ in absolute value, the level of ",
+         "rounding. (b) ",
+         "$d_{\\mathrm{MH}}$ and $d_{\\mathrm{H}}$: the Mantel--Haenszel and ",
+         "MH-Halley estimates minus the root of the Cox score with the same ",
+         "approximation (Newton--Raphson iteration), on the same datasets ",
+         "for both approximations; ", s8_undefined_text, ".\\par}"),
+  "\\end{table}"
+)
+writeLines(tabS8, file.path(tab_dir, "tableS8_grouped.tex"))
 
 message("Finished. Tables in ", tab_dir, "; figures in ", fig_dir)

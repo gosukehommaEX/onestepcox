@@ -1,0 +1,33 @@
+\begin{table}
+\caption{Event times rounded up to whole months in the design of grid B2 (1:1 allocation, no dropout, no strata): (a) large-sample limits and (b) simulations with the hazard ratio 5}
+\label{tab:grouped}
+\centering
+\footnotesize
+\begin{tabular}{rrrrrr}
+\toprule
+\multicolumn{6}{l}{(a) Large-sample limits} \\
+\midrule
+$\theta$ & MH & Cox, Efron & Cox, Breslow & \multicolumn{2}{c}{MH-Halley $-$ Cox} \\
+\cmidrule(lr){5-6}
+ & & & & Efron & Breslow \\
+\midrule
+$0.2$ & $1.5 \times 10^{-2}$ & $1.7 \times 10^{-4}$ & $1.5 \times 10^{-2}$ & $2.8 \times 10^{-7}$ & $< 10^{-14}$ \\
+$0.5$ & $9.5 \times 10^{-3}$ & $1.5 \times 10^{-4}$ & $9.5 \times 10^{-3}$ & $6.8 \times 10^{-8}$ & $< 10^{-14}$ \\
+$2$ & $-1.9 \times 10^{-2}$ & $-6.0 \times 10^{-4}$ & $-1.9 \times 10^{-2}$ & $-5.0 \times 10^{-7}$ & $< 10^{-14}$ \\
+$5$ & $-7.4 \times 10^{-2}$ & $-4.1 \times 10^{-3}$ & $-7.4 \times 10^{-2}$ & $-2.6 \times 10^{-5}$ & $-2.1 \times 10^{-13}$ \\
+\midrule
+\multicolumn{6}{l}{(b) Simulations} \\
+\midrule
+$n_T + n_C$ & Replicates & \multicolumn{2}{c}{Efron} & \multicolumn{2}{c}{Breslow} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+ & & Mean $d_{\mathrm{MH}}$ & Median $|d_{\mathrm{H}}|$ & Mean $d_{\mathrm{MH}}$ & Median $|d_{\mathrm{H}}|$ \\
+\midrule
+200 & 2,000 & $-6.1 \times 10^{-2}$ & $1.6 \times 10^{-5}$ & $8.0 \times 10^{-3}$ & $8.8 \times 10^{-7}$ \\
+2,000 & 500 & $-7.0 \times 10^{-2}$ & $2.6 \times 10^{-5}$ & $-1.6 \times 10^{-4}$ & $2.8 \times 10^{-8}$ \\
+20,000 & 200 & $-7.0 \times 10^{-2}$ & $2.6 \times 10^{-5}$ & $3.3 \times 10^{-5}$ & $6.6 \times 10^{-10}$ \\
+200,000 & 50 & $-7.0 \times 10^{-2}$ & $2.6 \times 10^{-5}$ & $-1.7 \times 10^{-4}$ & $3.2 \times 10^{-11}$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize (a) Limits of the Mantel--Haenszel (MH) and Cox estimators of the log hazard ratio minus $\log \theta$, computed from the limits of the numbers at risk and of events in each month, and the limit of the MH-Halley estimator minus that of the Cox estimator with the same approximation for ties; $< 10^{-14}$: below $10^{-14}$ in absolute value, the level of rounding. (b) $d_{\mathrm{MH}}$ and $d_{\mathrm{H}}$: the Mantel--Haenszel and MH-Halley estimates minus the root of the Cox score with the same approximation (Newton--Raphson iteration), on the same datasets for both approximations; every replicate had a finite Cox estimate.\par}
+\end{table}

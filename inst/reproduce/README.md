@@ -36,7 +36,13 @@ overlap too much to be read.
 
 The formulas in the script are those of the tests `book1.R` and `book2.R` of
 the 'survival' package, which take them from Appendix E of the book. They
-have not yet been checked against the book itself.
+agree with the book: for the Breslow approximation, the printed estimate
+1.475285 and information at the estimate 0.634168; for the Efron
+approximation, the closed forms of the score and the information on
+p. 327. The value printed there for the Efron information at the
+estimate, 0.652077, disagrees with the closed form on the same page, which
+gives 0.612632; the script checks the closed form (checked on 2026-11-03
+for the first independent review of the article).
 
 ## Not yet done
 
