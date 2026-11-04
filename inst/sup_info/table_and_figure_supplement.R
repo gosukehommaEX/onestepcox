@@ -430,6 +430,8 @@ s8_sim <- vapply(s8_n, function(n) {
 s8_undefined <- sum(gs8$n_undefined[gs8$ties == "efron"])
 s8_undefined_text <- if (s8_undefined == 0L) {
   "every replicate had a finite Cox estimate"
+} else if (s8_undefined == 1L) {
+  "one replicate without a finite Cox estimate is left out"
 } else {
   paste0(fmt_int(s8_undefined), " replicates without a finite Cox estimate ",
          "are left out")
@@ -498,18 +500,28 @@ s9_rows <- unlist(lapply(sort(unique(e9$HR)), function(h) {
     if (h != max(e9$HR)) "\\midrule")
 }))
 s9_undefined <- sum(e9$n_undefined)
+# The scenarios of these replicates are named, because the column Replicates
+# counts all replicates
+s9_where <- e9[e9$n_undefined > 0L, ]
 s9_undefined_text <- if (s9_undefined == 0L) {
   "every replicate had a finite Cox estimate"
 } else {
-  paste0(fmt_int(s9_undefined), " replicates without a finite Cox estimate ",
-         "are left out")
+  paste0(if (s9_undefined == 1L) "one replicate" else
+           paste(fmt_int(s9_undefined), "replicates"),
+         " without a finite Cox estimate (",
+         paste0("$\\theta = ", s9_where$HR, "$ with ", fmt_int(s9_where$n),
+                " subjects", collapse = "; "),
+         ") ", if (s9_undefined == 1L) "is" else "are", " left out")
 }
 s9_step_na <- sum(e9$n_emh_na + e9$n_newton_na + e9$n_halley_na)
 s9_step_text <- if (s9_step_na == 0L) {
   "and all estimators were defined in the other replicates"
 } else {
-  paste0("and an estimator was not defined in ", fmt_int(s9_step_na),
-         " cases of the other replicates, which are left out of its median")
+  paste0("and an estimator was not defined in ",
+         if (s9_step_na == 1L) "one case" else
+           paste(fmt_int(s9_step_na), "cases"),
+         " of the other replicates, which ",
+         if (s9_step_na == 1L) "is" else "are", " left out of its median")
 }
 tabS9 <- c(
   "\\begin{table}",
