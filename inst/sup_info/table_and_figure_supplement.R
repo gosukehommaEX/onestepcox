@@ -57,8 +57,10 @@ save_figure(ps1, fig_dir, "FigS1", height_mm = 85)
 # Figure S2: the growth scenarios with HR 0.2 and 5 -----------------------
 gs <- rbind(growth_summary(fixed), growth_summary(local_alt))
 s2_settings <- c("HR 0.2", "HR 5")
+# The second label in two lines, so that the strip on the right is not
+# cut off with the text in 8 pt (ggplot2 4.0 clips strip text by default)
 quantities <- c("|log HR - log HR of Cox|",
-                "|log HR - log HR of Cox| / SE of Cox")
+                "|log HR - log HR of Cox|\n/ SE of Cox")
 d2 <- rbind(
   cbind(growth_long(gs, c("dev_median", "dev_q99"), s2_settings),
         quantity = quantities[1L]),

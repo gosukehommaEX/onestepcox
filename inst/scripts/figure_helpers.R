@@ -7,6 +7,22 @@ base_size <- 8
 floor_value <- 1e-16  # smaller values are drawn at this value on log axes
 label_of <- function(m) onestepcox:::plot_labels(m)
 
+# Text of the axes, legends, and panel titles in base_size points rather
+# than 0.8 times base_size as in ggplot2::theme_bw(), so that all text of
+# a figure has the same size (the journal asks for about 8 to 12 pt);
+# added after plot_theme()
+fig_text <- function() {
+  ggplot2::theme(axis.text = ggplot2::element_text(size = base_size),
+                 legend.text = ggplot2::element_text(size = base_size),
+                 strip.text = ggplot2::element_text(size = base_size))
+}
+
+# Labeller that puts (a), (b), ... before the panel titles, in the order of
+# the panels, as the journal denotes the parts of a figure
+panel_letters <- ggplot2::as_labeller(function(x) {
+  paste0("(", letters[seq_along(x)], ") ", x)
+})
+
 # Save a figure as PDF and EPS, 119 mm wide (the width of the small-format
 # journals of Springer), with the fonts embedded by the cairo devices
 save_figure <- function(p, dir, name, height_mm, width_mm = 119) {
@@ -98,6 +114,7 @@ limit_plot <- function(lims) {
     ggplot2::labs(x = "Hazard ratio",
                   y = "|Large-sample bias| of the log hazard ratio") +
     onestepcox:::plot_theme(base_size) +
+    fig_text() +
     # One row of four methods (the default would be three and one)
     onestepcox:::plot_legend("bottom", legend_ncol = length(limit_methods),
                              k = length(limit_methods))
@@ -144,7 +161,8 @@ plateau_data <- function(limit_fixed, settings) {
 }
 
 # Figure of a statistic of the deviation against n, one panel per setting
-# (facet_wrap), or with the layer facet given (for example facet_grid())
+# (facet_wrap, with the panels lettered (a), (b), ...), or with the layer
+# facet given (for example facet_grid())
 growth_plot <- function(d, ylab, settings, plateau = NULL, facet = NULL) {
   d$value <- pmax(d$value, floor_value)
   d$method <- factor(d$method, levels = growth_methods)
@@ -166,7 +184,10 @@ growth_plot <- function(d, ylab, settings, plateau = NULL, facet = NULL) {
       show.legend = FALSE
     )
   }
-  if (is.null(facet)) facet <- ggplot2::facet_wrap(~ setting, ncol = 2)
+  if (is.null(facet)) {
+    facet <- ggplot2::facet_wrap(~ setting, ncol = 2,
+                                 labeller = panel_letters)
+  }
   p +
     ggplot2::geom_line(linewidth = 0.4) +
     ggplot2::geom_point(size = 1) +
@@ -185,6 +206,7 @@ growth_plot <- function(d, ylab, settings, plateau = NULL, facet = NULL) {
                                    breaks = stat_names, name = NULL) +
     ggplot2::labs(x = "Total sample size n", y = ylab) +
     onestepcox:::plot_theme(base_size) +
+    fig_text() +
     onestepcox:::plot_legend("bottom", k = length(growth_methods),
                              aesthetics = c("colour", "shape")) +
     ggplot2::theme(legend.box = "vertical")

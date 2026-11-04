@@ -7,7 +7,8 @@
 # in inst/scripts/results/quick/ are used and the output goes there.
 #
 # Figures: PDF and EPS (fonts embedded by the cairo devices), 119 mm wide,
-# Arial. Tables: complete table environments with caption, label, and notes.
+# Arial in 8 pt, with the panels lettered (a), (b), and so on. Tables:
+# complete table environments with caption, label, and notes.
 # The deviations are taken from the Cox estimate "Cox_NR" (see settings.R).
 
 source(file.path("inst", "scripts", "settings.R"))
@@ -133,7 +134,7 @@ p4 <- ggplot2::ggplot(pts, ggplot2::aes(x = .data$e, y = .data$err,
                      inherit.aes = FALSE, linetype = "dashed",
                      colour = "grey30", linewidth = 0.4)
 p4 <- p4 +
-  ggplot2::facet_wrap(~ step, ncol = 2) +
+  ggplot2::facet_wrap(~ step, ncol = 2, labeller = panel_letters) +
   ggplot2::scale_x_log10() +
   ggplot2::scale_y_log10() +
   onestepcox:::plot_scales(c("MH", "Pike"), c("MH anchor", "Pike anchor"),
@@ -142,6 +143,7 @@ p4 <- p4 +
   ggplot2::labs(x = "|anchor - Cox| (log HR)",
                 y = "|one-step estimate - Cox| (log HR)") +
   onestepcox:::plot_theme(base_size) +
+  fig_text() +
   onestepcox:::plot_legend("bottom", k = 2,
                            aesthetics = c("colour", "shape"))
 save_figure(p4, fig_dir, "Fig4", height_mm = 80)
@@ -195,7 +197,8 @@ tab1 <- c(
          "bias of the estimators of the log hazard ratio, from ",
          fmt_int(nsim_grid), " replicates of each scenario with ",
          "$n_T = n_C = 100$ and the analysis at ", E1,
-         " events. The settings are described in Table~S1}"),
+         " events. The settings are described in Table~S1 of ",
+         "Online Resource~1}"),
   "\\label{tab:operating}",
   "\\centering",
   "\\small",
@@ -283,7 +286,7 @@ tab2 <- c(
          tex_escape(app$treatment[app$analysis == "pharmacoSmoking"][1L]),
          " in \\texttt{pharmacoSmoking}. Cox: \\texttt{survival::coxph()}. ",
          "The results with the Breslow handling of ties are in ",
-         "Table~S6.\\par}"),
+         "Table~S6 of Online Resource~1.\\par}"),
   "\\end{table}"
 )
 writeLines(tab2, file.path(tab_dir, "table2_application.tex"))
