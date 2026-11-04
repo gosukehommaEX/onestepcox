@@ -22,6 +22,7 @@ options(onestepcox.quick = TRUE)
 source("inst/scripts/data_generate_main.R")
 source("inst/sup_info/data_generate_supplement.R")
 source("inst/sup_info/data_generate_grouped.R")
+source("inst/sup_info/data_generate_emh.R")
 source("inst/scripts/table_and_figure_manuscript.R")
 source("inst/sup_info/table_and_figure_supplement.R")
 # Full run
@@ -29,6 +30,7 @@ options(onestepcox.quick = FALSE)
 source("inst/scripts/data_generate_main.R")
 source("inst/sup_info/data_generate_supplement.R")
 source("inst/sup_info/data_generate_grouped.R")
+source("inst/sup_info/data_generate_emh.R")
 source("inst/scripts/table_and_figure_manuscript.R")
 source("inst/sup_info/table_and_figure_supplement.R")
 ```
@@ -36,7 +38,7 @@ source("inst/sup_info/table_and_figure_supplement.R")
 The packages 'asaur' (pharmacoSmoking data) and 'microbenchmark' (computing
 times) are needed besides the imports of the package; the data scripts check
 them first. The data scripts write `run_log_main.csv`,
-`run_log_supplement.csv`, and `run_log_grouped.csv` (elapsed minutes of each section and the versions
+`run_log_supplement.csv`, `run_log_grouped.csv`, and `run_log_emh.csv` (elapsed minutes of each section and the versions
 of R and the packages) and the session information to `results/data/`. The
 largest scenario of grid A (900 subjects, 10,000 replicates) generates 9
 million rows at once and needs about 2 GB of memory.
@@ -87,13 +89,15 @@ replicates with a finite Cox estimate, which stay in the summaries, so that
 | `gridC` | sup_info | n_T + n_C = 30, 60; r = 1, 2; HR 0.1, 0.2, 0.5, 2, 5, 10 (24 scenarios) | 10,000 | 500001 |
 | `timing` | sup_info | One dataset each with n = 200, 1,000, 5,000, 20,000, HR 0.5: aggregation of the risk sets, the Mantel-Haenszel anchor and Halley step, Newton-Raphson iteration from the same anchor (tolerance 1e-8 and 1e-12), `EstHR()` with `"MH_Halley"`, `"Cox_NR"`, and `"Cox"`, and `survival::coxph()` | 200 timings each (`microbenchmark`) | 600001 |
 | `grouped` | sup_info (`data_generate_grouped.R`) | Times rounded up to months as in B2 (1:1, no dropout, no strata): large-sample limits of the Mantel-Haenszel anchor, of the Cox estimate with the Efron and Breslow approximations, and of the MH-Halley estimator at HR 0.2, 0.5, 2, 5 (numerical integration over the months); simulations with HR 5 and n_T + n_C = 200, 2,000, 20,000, 200,000 (methods `Cox_NR`, `MH`, `MH_Halley`, Efron and Breslow on the same datasets; chunks of 10 for n of 20,000 or more) | 2,000, 500, 200, 50 | 700001 |
+| `emh` | sup_info (`data_generate_emh.R`) | The datasets of `fixed` again (its seeds, used again on purpose): the Mantel-Haenszel and efficient Mantel-Haenszel (EMH) estimates of Anderson and Bernstein (1985) from `RiskTable()`, compared with `Cox_NR`, `MH`, `MH_Newton`, and `MH_Halley` of `fixed.rds`; the script stops if the recomputed Mantel-Haenszel estimates or the summaries of `MH`, `MH_Newton`, and `MH_Halley` differ from those of `fixed.rds` | as `fixed` | 100001 (that of `fixed`) |
 
 Seeds: scenario i of a section uses base + 100 (i - 1), as `CompareOC()`
 does; for n of 30,000 or more (20,000 or more in `grouped`) the replicates
 are run in chunks of 10, and
 chunk k uses base + 100 (i - 1) + (k - 1). The bases are at least 50,000
 apart and a section uses at most 4,200 seeds above its base, so that no
-seed is used twice. The estimates of every replicate are saved for `fixed`
+seed is used twice, apart from the section `emh`, which uses the seeds of `fixed` on
+purpose to analyze the same datasets. The estimates of every replicate are saved for `fixed`
 and `local`; for the grids only the summaries are saved, because the
 estimates of `gridA` alone would take about 100 MB.
 
@@ -121,6 +125,8 @@ Supporting Information (`inst/sup_info/results/`):
 |---|---|
 | `data/limit_sup.rds`, `gridB_breslow.rds`, `gridC.rds`, `timing.rds` | Results of the sections of the supplement |
 | `data/grouped.rds` | Grouped times (`data_generate_grouped.R`): `limits` (one row per HR), `scenarios`, `simulation` (one row per n and handling of ties: mean and median absolute difference from `Cox_NR` of `MH` and `MH_Halley`), and `estimates` (every replicate) |
+| `data/emh.rds`, `emh_summary.csv` | EMH (`data_generate_emh.R`): `scenarios`, `summary` (one row per scenario: replicates, `n_undefined`, the numbers of replicates in which the EMH, MH-Newton, or MH-Halley estimate is not defined, the largest difference between the recomputed Mantel-Haenszel estimates and those of `fixed.rds` (`mh_check`), and the median, 99th percentile, and maximum of the absolute difference from `Cox_NR` of `MH`, `EMH`, `MH_Newton`, and `MH_Halley`), `estimates` (every replicate), and `tables` (the risk tables kept for the check in Python) |
+| `data/emh_check_tables.csv`, `emh_check_estimates.csv` | Risk tables of the first replicate of the scenarios of `fixed` with n up to 1,000, and their estimates with 17 significant digits, for the independent check in Python |
 | `tables/tableS1_scenarios.tex` | Table S1: the scenarios |
 | `tables/tableS2_gridA.tex`, `tableS3_gridB.tex` | Tables S2 and S3: all summaries of grids A and B (B2 and B5 also with Breslow ties); long tables |
 | `tables/tableS4_gridC.tex` | Table S4: small samples and extreme hazard ratios; long table |
@@ -128,6 +134,7 @@ Supporting Information (`inst/sup_info/results/`):
 | `tables/tableS6_application.tex` | Table S6: applications, all methods, Efron and Breslow; long table |
 | `tables/tableS7_validation.tex` | Table S7: results of `inst/reproduce/` and `inst/validation/` (from `inst/validation/results/summary.csv`) |
 | `tables/tableS8_grouped.tex` | Table S8: grouped times, large-sample limits and simulations |
+| `tables/tableS9_emh.tex` | Table S9: median distance from `Cox_NR` of the Mantel-Haenszel, EMH, MH-Newton, and MH-Halley estimates under the fixed alternatives, n = 100, 1,000, 10,000, 100,000 |
 | `figures/FigS1.pdf`, `.eps` | Figure S1: Figure 1 with 2:1 allocation and with dropout |
 | `figures/FigS2.pdf`, `.eps` | Figure S2: Figures 2 and 3 for HR 0.2 and 5 |
 

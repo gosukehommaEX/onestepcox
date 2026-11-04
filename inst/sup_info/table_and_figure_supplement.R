@@ -1,6 +1,7 @@
 # Tables and figures of the Supporting Information, made from the results
 # saved by inst/sup_info/data_generate_supplement.R,
-# inst/sup_info/data_generate_grouped.R, and
+# inst/sup_info/data_generate_grouped.R,
+# inst/sup_info/data_generate_emh.R, and
 # inst/scripts/data_generate_main.R (no simulation is run here), and from the
 # summary of the reproduction and validation scripts
 # (inst/validation/results/summary.csv).
@@ -35,6 +36,7 @@ gridB_breslow <- read_sup("gridB_breslow.rds")
 gridC <- read_sup("gridC.rds")
 timing <- read_sup("timing.rds")
 grouped <- read_sup("grouped.rds")
+emh <- read_sup("emh.rds")
 validation <- utils::read.csv(file.path("inst", "validation", "results",
                                         "summary.csv"),
                               stringsAsFactors = FALSE)
@@ -478,5 +480,73 @@ tabS8 <- c(
   "\\end{table}"
 )
 writeLines(tabS8, file.path(tab_dir, "tableS8_grouped.tex"))
+
+# Table S9: the efficient Mantel-Haenszel estimator -------------------------
+# Medians of |estimate - Cox estimate| under the fixed alternatives, for the
+# sample sizes that are powers of ten (data_generate_emh.R)
+e9 <- emh$summary
+s9_n <- c(100, 1000, 1e4, 1e5)
+e9 <- e9[e9$n %in% s9_n, ]
+e9 <- e9[order(e9$HR, e9$n), ]
+s9_rows <- unlist(lapply(sort(unique(e9$HR)), function(h) {
+  x <- e9[e9$HR == h, ]
+  first <- c(paste0("$", h, "$"), rep("", nrow(x) - 1L))
+  c(paste0(first, " & ", fmt_int(x$n), " & ", fmt_int(x$nsim), " & ",
+           fmt_sci(x$MH_median), " & ", fmt_sci(x$EMH_median), " & ",
+           fmt_sci(x$MH_Newton_median), " & ", fmt_sci(x$MH_Halley_median),
+           " \\\\"),
+    if (h != max(e9$HR)) "\\midrule")
+}))
+s9_undefined <- sum(e9$n_undefined)
+s9_undefined_text <- if (s9_undefined == 0L) {
+  "every replicate had a finite Cox estimate"
+} else {
+  paste0(fmt_int(s9_undefined), " replicates without a finite Cox estimate ",
+         "are left out")
+}
+s9_step_na <- sum(e9$n_emh_na + e9$n_newton_na + e9$n_halley_na)
+s9_step_text <- if (s9_step_na == 0L) {
+  "and all estimators were defined in the other replicates"
+} else {
+  paste0("and an estimator was not defined in ", fmt_int(s9_step_na),
+         " cases of the other replicates, which are left out of its median")
+}
+tabS9 <- c(
+  "\\begin{table}",
+  paste0("\\caption{Median distance from the Cox estimate of the log hazard ",
+         "ratio under the fixed alternatives: the Mantel--Haenszel ",
+         "estimator, the efficient Mantel--Haenszel estimator (EMH), and ",
+         "one Newton and one Halley step from the Mantel--Haenszel ",
+         "estimate}"),
+  "\\label{tab:emh}",
+  "\\centering",
+  "\\footnotesize",
+  "\\begin{tabular}{rrrrrrr}",
+  "\\toprule",
+  paste0("$\\theta$ & $n_T + n_C$ & Replicates & ",
+         "\\multicolumn{4}{c}{Median of ",
+         "$|\\hat{\\eta} - \\hat{\\eta}_{\\mathrm{Cox}}|$} \\\\"),
+  "\\cmidrule(lr){4-7}",
+  " & & & MH & EMH & MH-Newton & MH-Halley \\\\",
+  "\\midrule",
+  s9_rows,
+  "\\bottomrule",
+  "\\end{tabular}",
+  "\\par\\smallskip",
+  paste0("{\\footnotesize The datasets of the fixed alternatives of ",
+         "Figure~2 of the main article (Table~\\ref{tab:scenarios}), with ",
+         "$n_T = n_C$ and continuous event times, for the sample sizes that ",
+         "are powers of ten. MH: Mantel--Haenszel estimator. EMH: the ",
+         "efficient Mantel--Haenszel estimator of Anderson and Bernstein ",
+         "(1985), the solution of the Cox estimating equation with its ",
+         "weights evaluated at the Mantel--Haenszel estimate. MH-Newton and ",
+         "MH-Halley: one Newton and one Halley step from the ",
+         "Mantel--Haenszel estimate (Section~2.3 of the main article). ",
+         "$\\hat{\\eta}_{\\mathrm{Cox}}$: the root of the Cox score by ",
+         "Newton--Raphson iteration on the same numbers at risk and of ",
+         "events; ", s9_undefined_text, ", ", s9_step_text, ".\\par}"),
+  "\\end{table}"
+)
+writeLines(tabS9, file.path(tab_dir, "tableS9_emh.tex"))
 
 message("Finished. Tables in ", tab_dir, "; figures in ", fig_dir)
