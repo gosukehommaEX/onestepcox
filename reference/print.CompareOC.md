@@ -52,10 +52,10 @@ print(res, digits = 2)
 #> 1 scenario; 20 replicates each; reference: Cox; ties: efron; conf.level: 0.95
 #> 
 #> Scenario demo (true HR = 0.7)
-#>           n_NA dev_med dev_max se_ratio   bias rmse coverage    time
-#> Cox          0 0.0e+00 0.0e+00     1.00 -0.088 0.21     0.95 0.00110
-#> Pike         0 1.4e-03 1.0e-02     0.99 -0.085 0.20     0.95 0.00025
-#> MH_Halley    0 1.4e-09 4.2e-08     1.00 -0.088 0.21     0.95 0.00025
+#>           n_NA dev_med dev_max se_ratio   bias rmse coverage   time
+#> Cox          0 0.0e+00 0.0e+00     1.00 -0.088 0.21     0.95 0.0011
+#> Pike         0 1.4e-03 1.0e-02     0.99 -0.085 0.20     0.95 0.0002
+#> MH_Halley    0 1.4e-09 4.2e-08     1.00 -0.088 0.21     0.95 0.0002
 #> 
 #> dev: |coef - coef of the reference| (median and maximum); se_ratio: median of
 #> se / se of the reference; time: seconds per replicate. All summaries are in x$summary.
